@@ -218,9 +218,16 @@ tuple:
 - `Ports > <port> > IP Address`, `Subnet Mask`, `Access VLAN`, `Port Mode`;
 - `VLANS > VLAN <n> > VLAN Name`;
 - `OSPF > Process ID <n> > Router ID`, `OSPF > Process ID <n> > Networks > Route<k>`;
+- `Ports > <port> > Access-group In`, `Access-group Out`, `NAT Mode`;
+- `ACL > <number or name>`: every line of the list, in order;
+- `NAT > Inside Source List > NAT Source Setting <k>` and `NAT > Inside Source Static >
+  NAT Source Setting <k>`, the k-th rule of each kind;
+- `DHCP Server > Pools > Pool <name> > Network Address`, `Default Gateway`, `DNS server IP`,
+  and `DHCP Server > Excluded Addresses > <first> <last>`;
 - `Running Configuration > <line>`, or `> <block header> > <line in it>`, for anything else
   in the config: `("R1", "Running Configuration", "router ospf 1", "network 10.0.0.0
-  0.0.0.255 area 0")`.
+  0.0.0.255 area 0")`. Packet Tracer's wizard can't grade static routes, PAT's `overload` or
+  whether a named access list exists, so grade those with config lines (`diff_items` does).
 
 An item pktlib can't write yet, or one naming a device or port that isn't in both networks,
 raises `PktError`. `tests=[(source, destination, should_succeed)]` become ping checks;

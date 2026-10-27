@@ -58,8 +58,12 @@ name, a cable choice or a "refused" line from memory or from real-IOS knowledge 
 - `.pkt` files are git-ignored except `scripts/sources/` and `tests/fixtures/`.
   Commit the script; the file can be rebuilt.
 - A file saved in Packet Tracer carries the saver's recent-files list (Windows username,
-  folders, other file names). Empty every `RECENT_FILES` before committing a sample or
-  fixture; `tests/test_model.py` fails if one isn't.
+  folders, other file names), and 8.2 can't clear it. Empty every `RECENT_FILES` before
+  committing a sample or fixture; `tests/test_model.py` fails if one isn't.
+- Never commit a file from a course: no lecturer starter file, assessment or NetAcad
+  activity, not even cut down. Read one for its quirks, pin the quirk in a test, keep the
+  file out. Every sample gets a line in `tests/fixtures/README.md` saying where it came
+  from; `tests/test_model.py` fails on one that hasn't.
 - Use verified models only (`pktlib.models()`, all 64 in 8.2). Use the port names the spec
   gives, which are Packet Tracer's own, including home-kit names with spaces
   (`wrt["Ethernet 1"]`, `cloud["Coaxial7"]`). A cable whose port name Packet Tracer doesn't

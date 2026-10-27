@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import math
 import random
 import re
@@ -96,6 +97,12 @@ class Note:
 
     @property
     def text(self) -> str:
+        """The text as Packet Tracer shows it, entities decoded ('x < 10')."""
+        return html.unescape(self.html)
+
+    @property
+    def html(self) -> str:
+        """The text as stored: Packet Tracer renders it as HTML ('x &lt; 10')."""
         return self.el.findtext("TEXT") or ""
 
     @property
@@ -154,9 +161,15 @@ def check_note_text(text: object) -> str:
     return text
 
 
-def make_note(text: str, xy: tuple[float, float], z: int, mem_addr: str, rng: random.Random) -> ET.Element:
+def make_note(
+    text: str, xy: tuple[float, float], z: int, mem_addr: str, rng: random.Random, *, as_html: bool = False
+) -> ET.Element:
     """The XML for a text note; see Network.note()."""
     check_note_text(text)
+    if not as_html:
+        # Packet Tracer renders a note as HTML: `x < 10 and y > 3` lost `< 10 and y >` as a
+        # tag, `<b>` turned bold; written as entities they showed as typed (27 Oct 2026)
+        text = html.escape(text, quote=False)
     for v in xy:
         if isinstance(v, bool) or not isinstance(v, (int, float)):
             raise TypeError(f"a note's position is two numbers, got {xy!r}")

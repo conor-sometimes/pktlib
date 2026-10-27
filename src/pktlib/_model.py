@@ -1901,12 +1901,14 @@ class Network:
         """An ellipse inside the box (x1, y1)-(x2, y2); colours as for rectangle()."""
         return self._shape("ELLIPSES", (x1, y1, x2, y2), outline, fill)
 
-    def note(self, text: str, at: tuple[float, float]) -> Note:
-        """A text label on the workspace."""
+    def note(self, text: str, at: tuple[float, float], *, html: bool = False) -> Note:
+        """A text label on the workspace, shown as written. Packet Tracer reads
+        a note as HTML, so `&`, `<` and `>` are escaped; with html=True the text
+        is written as it is, markup and all ('<b>R1</b> is the core')."""
         parent = self.root.find("PHYSICALWORKSPACE/NOTES")
         if parent is None:
             parent = ET.SubElement(req(self.root, "PHYSICALWORKSPACE"), "NOTES")
-        el = make_note(text, at, 40000 + 2 * len(parent), _rand_addr(self._rng), self._rng)
+        el = make_note(text, at, 40000 + 2 * len(parent), _rand_addr(self._rng), self._rng, as_html=html)
         parent.append(el)
         return Note(el)
 

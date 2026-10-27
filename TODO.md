@@ -66,9 +66,5 @@ refuses or warns about it:
 
 ## Before publishing
 
-- No coursework in the repo or the package: every `.pkt` is a palette catalogue, a network
-  pktlib built, or one saved in Packet Tracer for a check. A file from a course (a starter
-  file, an assessment, a NetAcad activity) is read for its quirks and never committed.
-- `scripts/sources/wic2t.pkt` (the base file and the 1841+WIC-2T) was cut down by script from
-  an 8.2.0 save; replace it with a fresh Packet Tracer save of one 1841 with a WIC-2T in
-  slot 0, and re-save `tests/fixtures/routed.pkt` in Packet Tracer.
+- No coursework in the repo or the package: every sample is listed with its origin in
+  `tests/fixtures/README.md`, and a test fails on one that isn't.
