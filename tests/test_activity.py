@@ -12,15 +12,18 @@ the answer as the starting network Check Results said "You completed the
 activity" with all six items Correct; from the blank start, giving PC2 its
 address in the GUI took Completion to 16% (one item of six)."""
 
+import runpy
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
 
 import pktlib
-from pktlib.activity import Activity, activity_from_xml, load_activity, make_activity
+from pktlib import PktError
+from pktlib.activity import Activity, activity_from_xml, diff_items, load_activity, make_activity
 
 FIXTURES = Path(__file__).parent / "fixtures"
+SOURCES = Path(__file__).parents[1] / "scripts" / "sources"
 ITEMS = [
     "R1 > Host Name",
     "R1 > Ports > GigabitEthernet0/0 > IP Address",
@@ -303,3 +306,106 @@ def test_router_id_without_a_router_id_line(loopback, want):
         r.config(["interface Loopback0", f" ip address {loopback.split('/')[0]} 255.255.255.255"])
     made = make_activity(answer, lab(False), ["R1 > OSPF > Process ID 1 > Router ID"])
     assert made.items[0].expected == want
+
+
+# --- ACLs, NAT and DHCP: tests/fixtures/rich2.pka ----------------------------
+# Made in Packet Tracer 8.2's Activity Wizard on 27 Oct 2026 from rich2-answer.pkt and
+# rich2-start.pkt (scripts/sources/rich2.py, saved by Packet Tracer). Graded as a
+# student from the start, each of its 11 items turned Correct on its own as its config
+# went in, and the activity completed; ACL line order counted, `overload` didn't.
+
+RICH2 = [
+    ("R1 > Ports > GigabitEthernet0/0 > Access-group In", "110"),
+    ("R1 > Ports > GigabitEthernet0/0 > Access-group Out", "20"),
+    ("R1 > Ports > GigabitEthernet0/0 > NAT Mode", "1"),
+    ("R1 > ACL > 20", "deny host 9.9.9.9\npermit any"),
+    ("R1 > ACL > 110", "deny icmp 192.168.1.0 0.0.0.255 host 8.8.4.4\npermit ip any any"),
+    ("R1 > NAT > Inside Source List > NAT Source Setting 1", "GigabitEthernet0/1"),
+    ("R1 > NAT > Inside Source Static > NAT Source Setting 1", "192.168.1.10 203.0.113.10 "),
+    ("R1 > DHCP Server > Pools > Pool LAN > DNS server IP", "8.8.8.8"),
+    ("R1 > DHCP Server > Pools > Pool LAN > Default Gateway", "192.168.1.1"),
+    ("R1 > DHCP Server > Pools > Pool LAN > Network Address", "192.168.1.0"),
+    ("R1 > DHCP Server > Excluded Addresses > 192.168.1.1 192.168.1.20", "192.168.1.1 192.168.1.20"),
+]
+
+
+@pytest.fixture(scope="module")
+def rich2():
+    return load_activity(FIXTURES / "rich2.pka")
+
+
+def _tree(xml: bytes) -> dict[tuple[str, ...], tuple[str | None, str | None, str | None]]:
+    """Every ticked node of COMPARISONS: path -> (ID, eclass, value)."""
+    out = {}
+
+    def walk(node, path):
+        name = node.find("NAME")
+        here = (*path, name.text)
+        if name.get("checkType") in ("1", "2"):
+            out[here] = (node.findtext("ID"), name.get("eclass"), name.get("nodeValue"))
+        for child in node.findall("NODE"):
+            walk(child, here)
+
+    tree = ET.fromstring(xml).find("COMPARISONS")
+    assert tree is not None
+    for top in tree.findall("NODE"):
+        walk(top, ())
+    return out
+
+
+def test_rich2_items_and_scores(rich2):
+    assert [(" > ".join(i.path), i.expected) for i in rich2.items] == RICH2
+    answer = pktlib.load(FIXTURES / "rich2-answer.pkt")
+    start = pktlib.load(FIXTURES / "rich2-start.pkt")
+    assert all(ok for _, ok in rich2.score(answer))
+    assert not any(ok for _, ok in rich2.score(start))
+    # the wizard leaves what the start lacks out of INITIALSETUP; read from the start instead
+    assert {" > ".join(i.path): i.initial for i in rich2.items}["R1 > Ports > GigabitEthernet0/0 > NAT Mode"] == "0"
+
+
+@pytest.mark.parametrize("source", ["saved", "built"])
+def test_rich2_written_as_the_wizard_wrote_it(rich2, source):
+    """The same items made by make_activity give the wizard's tree: values, IDs and
+    classes, from the networks Packet Tracer saved and from rich2.py's own build. Only
+    Routes > Static Routes differs: the wizard ticks it, but it grades nothing."""
+    if source == "saved":
+        answer, start = pktlib.load(FIXTURES / "rich2-answer.pkt"), pktlib.load(FIXTURES / "rich2-start.pkt")
+    else:
+        built = runpy.run_path(str(SOURCES / "rich2.py"), run_name="rich2")
+        answer, start = built["build"](True), built["build"](False)
+    ours = _tree(make_activity(answer, start, [p for p, _ in RICH2]).to_xml())
+    wizard = {k: v for k, v in _tree(pktlib.decode((FIXTURES / "rich2.pka").read_bytes())).items() if "Routes" not in k}
+    assert ours == wizard
+
+
+def test_diff_items_grades_acls_nat_and_dhcp_once():
+    built = runpy.run_path(str(SOURCES / "rich2.py"), run_name="rich2")
+    answer, start = built["build"](True), built["build"](False)
+    items = [" > ".join(p) for p in diff_items(answer, start)]
+    assert {p for p, _ in RICH2} - set(items) == {"R1 > NAT > Inside Source List > NAT Source Setting 1"}
+    lines = [p for p in items if "Running Configuration" in p]
+    # what the wizard can't grade stays a config line: static routes, and PAT with its overload
+    assert lines == [
+        "R1 > Running Configuration > ip route 0.0.0.0 0.0.0.0 198.51.100.1",
+        "R1 > Running Configuration > ip route 10.20.0.0 255.255.0.0 198.51.100.1",
+        "R1 > Running Configuration > ip nat inside source list 1 interface GigabitEthernet0/1 overload",
+    ]
+    act = activity_from_xml(make_activity(answer, start, items).to_xml())
+    assert all(ok for _, ok in act.score(answer)) and not any(ok for _, ok in act.score(start))
+
+
+def test_static_routes_and_missing_nat_rules_are_refused():
+    answer = pktlib.load(FIXTURES / "rich2-answer.pkt")
+    with pytest.raises(PktError, match="can't grade static routes"):
+        make_activity(answer, answer, ["R1 > Routes > Static Routes"])
+    with pytest.raises(PktError, match="has 1 such NAT rules"):
+        make_activity(answer, answer, ["R1 > NAT > Inside Source Static > NAT Source Setting 2"])
+
+
+def test_a_named_acl_reads_like_a_numbered_one():
+    """Packet Tracer graded `ip access-list standard 20` the same as `access-list 20`."""
+    net = pktlib.new(seed=3)
+    r = net.router("R1", "2911")
+    r.config("ip access-list standard 20\n deny host 9.9.9.9\n permit any")
+    act = make_activity(net, net, ["R1 > ACL > 20"])
+    assert act.items[0].expected == "deny host 9.9.9.9\npermit any"

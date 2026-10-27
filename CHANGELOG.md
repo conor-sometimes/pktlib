@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Activities grade ACLs, access groups, NAT and DHCP: `ACL > 110`, `Ports > <port> >
+  Access-group In` / `Out` / `NAT Mode`, `NAT > Inside Source Static > NAT Source Setting 1`,
+  `DHCP Server > Pools > Pool LAN > Default Gateway`, `DHCP Server > Excluded Addresses > ...`.
+  `score()` reads them, `make_activity()` writes them as Packet Tracer's wizard does, and
+  `diff_items()` (so `Lab.build(pka=True)`) picks them, keeping config lines for what the
+  wizard can't grade (static routes, PAT's `overload`).
+- `net.note(text, html=True)` writes markup on purpose; `Note.html` is the stored text.
+
+### Fixed
+
+- `net.note()` text shows as written: Packet Tracer renders notes as HTML, so `<n>` in
+  `100.64.<n>.0/30` vanished. `&`, `<` and `>` are now escaped (two showcase notes had it).
+- A loaded activity's `initial` reads the start network where the wizard left the value
+  out (an ACL or pool the start hasn't got).
+- `scripts/make_templates.py` no longer deletes the activity template.
+- Static routes in `make_activity()` are refused with the reason (the wizard can't grade
+  them), not as an unknown item.
+
 ## 0.2.1 (27 Oct 2026)
 
 0.2.0 was withdrawn from PyPI; install 0.2.1 instead.

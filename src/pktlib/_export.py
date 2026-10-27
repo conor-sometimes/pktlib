@@ -184,7 +184,10 @@ def to_python(net: Network, out: str = "out.pkt") -> str:
         drawings.append(f"net.{sh.kind}({args})")
     for n in net.notes:
         x, y = n.xy
-        drawings.append(f"net.note({n.text!r}, at=({_num(x)}, {_num(y)}))")
+        if any(c in n.html for c in "&<>"):  # kept exactly as stored
+            drawings.append(f"net.note({n.html!r}, at=({_num(x)}, {_num(y)}), html=True)")
+        else:
+            drawings.append(f"net.note({n.text!r}, at=({_num(x)}, {_num(y)}))")
     if drawings:
         lines += [""] + drawings
 

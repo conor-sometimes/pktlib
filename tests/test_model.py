@@ -539,6 +539,21 @@ def test_no_file_in_the_repo_carries_a_recent_files_list():
         assert not re.search(rb"<RECENT_FILES>\s*<(?!/)", xml), f.name
 
 
+def test_every_sample_file_says_where_it_came_from():
+    """A course file (the CA1 network) reached the public repo and PyPI on 27 Oct and had to
+    be scrubbed from both. Every sample must be listed, with its origin, in
+    tests/fixtures/README.md, and none may carry text that looks like coursework."""
+    root = Path(__file__).resolve().parents[1]
+    listed = set(re.findall(r"`([^`/]+\.pk[at])`", (root / "tests" / "fixtures" / "README.md").read_text()))
+    files = [*root.glob("tests/fixtures/*.pk[at]"), *root.glob("scripts/sources/*.pk[at]")]
+    assert {f.name for f in files} - listed == set()
+    course = re.compile(
+        rb"\bCA\d\b|\bG00\d{6}\b|[Aa]ssessment [Bb]rief|[Ss]tudent [Nn]umber|[Cc]ontinuous [Aa]ssessment"
+    )
+    for f in files:
+        assert not course.search(decode(f.read_bytes())), f.name
+
+
 def test_reloading_with_the_build_seed_never_repeats_ids_or_macs(tmp_path):
     """Found by the state machine: a file loaded with the seed it was built with drew the
     same SAVE_REF_ID for the next new device as for the first, so a cable to the new one
@@ -552,3 +567,18 @@ def test_reloading_with_the_build_seed_never_repeats_ids_or_macs(tmp_path):
     assert again.duplicate_macs() == {}
     second["g0/0"].connect(again["R1"]["g0/0"])
     assert again.links[0].ports == (second["g0/0"], again["R1"]["g0/0"])
+
+
+def test_note_text_is_shown_as_written(net):
+    """Checked in Packet Tracer 8.2 on 27 Oct 2026: a note is rendered as HTML, so
+    `if x < 10 and y > 3 then <b>not bold</b> & "quoted"` showed as `if x 3 then` and a
+    bold `not bold`; with &lt; and &gt; it showed as typed. note() escapes by default."""
+    n = net.note('x < 10 and <b>not bold</b> & "quoted"', at=(10, 10))
+    assert n.html == 'x &lt; 10 and &lt;b&gt;not bold&lt;/b&gt; &amp; "quoted"'
+    assert n.text == 'x < 10 and <b>not bold</b> & "quoted"'
+    bold = net.note("<b>R1</b> is the core", at=(10, 40), html=True)
+    assert bold.html == "<b>R1</b> is the core" and bold.text == "<b>R1</b> is the core"
+    again = pktlib.Network.from_bytes(net.to_bytes())
+    assert [x.html for x in again.notes] == [n.html, bold.html]
+    script = pktlib.to_python(again)
+    assert "html=True" in script and "x &lt; 10" in script

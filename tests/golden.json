@@ -131,7 +131,7 @@
   "sample.pkt": "1fc26f74a70cad5f6e449a5de741af274d3ad6689acf598079494c144132186d"
  },
  "examples/showcase/campus.py": {
-  "campus.pkt": "0b9caacb76fe9cdb94bc97b85ac587c680350d203cf655009decdbb9e0dba4d8"
+  "campus.pkt": "0d99271bb7fc59957e24c73d6a36912b8c267cee3104ced4cd0e0577a5f0782b"
  },
  "examples/showcase/datacenter.py": {
   "datacenter.pkt": "60ccc29eb5c86a254a2c5e0bfc531f813654d9573a13efe5d6e8edb4e4f813af"
@@ -152,7 +152,7 @@
   "hub_and_spoke.pkt": "b79cc889acb9a1c4edacf291a35afdc522f2bfe42333bf05ac790e6e418ed5a0"
  },
  "examples/showcase/isp_backbone.py": {
-  "isp_backbone.pkt": "c7667c3b7df8a0b0c367ff9c25008ba47ec456e3fd8d65d726429d714d622411"
+  "isp_backbone.pkt": "98504ef3e51582d2ba66680e8b1ac29a304beaa3fdfd4f0ebb9957483e90b6bb"
  },
  "examples/showcase/redistribution.py": {
   "redistribution.pkt": "ec0e43d7e5d454622b35c16ea89da7a72cb83cb7ae6ae2318427e358634594bd"

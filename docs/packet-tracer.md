@@ -116,6 +116,42 @@ Found the hard way while testing the examples:
   commands go into the interface's existing block (replacing its `shutdown` or
   `no ip address`), and a Port-channel goes ahead of the ports. The
   data-centre cores run an LACP channel this way.
+- **A note is HTML.** Packet Tracer renders note text as rich text, so
+  `x < 10 and y > 3` loses `< 10 and y >` as a tag and `<b>` turns bold; a
+  note typed in its own GUI does the same. `note()` escapes `&`, `<` and `>`
+  so the text shows as written; `html=True` writes markup on purpose.
+- **Every save carries the saver's recent files.** `RECENT_FILES` holds the
+  paths of the files Packet Tracer last opened (Windows username, folders,
+  file names), and 8.2 has no way to clear the list. pktlib's base file has it
+  empty; a test fails on any sample in the repo that doesn't.
+- **Cable length effects are on by default.** A fresh 8.2 save has
+  `ENABLE_CABLE_LENGTH_EFFECTS` true. pktlib puts every device in the same
+  wiring closet, so cable length never breaks a link.
+- **No fibre into copper.** A fibre cable to a 2960's FastEthernet port is
+  refused ("The cable cannot be connected to that port"). pktlib has no fibre
+  cable type.
+
+## What the Activity Wizard can and can't grade
+
+Seen in 8.2 on 27 Oct 2026 with `tests/fixtures/rich2.pka`, graded as a
+student one item at a time:
+
+- **ACLs** are graded whole: `ACL > 110` is every line of the list, in order;
+  the same lines in another order stay Incorrect. `ip access-list standard 20`
+  grades the same as `access-list 20`.
+- **Access groups and NAT on a port** (`Access-group In`, `NAT Mode`) turn
+  Correct even when the list they name doesn't exist, or the port has no
+  address.
+- **NAT rules** are found by ID: a list rule by its access list's number, a
+  static one by its address pair. `overload` isn't checked, nor whether the
+  access list exists.
+- **DHCP**: each pool option, and each excluded range, is an item of its own.
+- **Static routes can't be graded from the tree**: `Routes > Static Routes`
+  has nothing under it, and ticking it makes no item. Grade them with a
+  running-config line.
+- **An activity password** guards only the Activity Wizard (which also shows
+  the answer network). It's stored as 32 hex digits in `<ACTIVITY PASS>`, not
+  as the text, and not as a plain MD5 of it.
 
 ## How the file format works
 

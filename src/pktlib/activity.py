@@ -18,6 +18,8 @@ write a new one from two pktlib networks.
             "SW1 > VLANS > VLAN 10 > VLAN Name",
             "SW1 > Ports > FastEthernet0/1 > Access VLAN",
             "R1 > OSPF > Process ID 1 > Networks > Route0",
+            "R1 > ACL > 110",
+            "R1 > DHCP Server > Pools > Pool LAN > Default Gateway",
             ("R1", "Running Configuration", "router ospf 1", "network 10.0.12.0 0.0.0.3 area 0"),
         ], instructions="...", tests=[("PC1", "SERVER", True)])
     act.save("lab.pka")         # opens in Packet Tracer, Check Results grades it
@@ -27,7 +29,16 @@ The item kinds, as the Activity Wizard names them (device first):
   Ports > <port> > IP Address | Subnet Mask | Access VLAN | Port Mode
   VLANS > VLAN <n> > VLAN Name
   OSPF > Process ID <n> > Router ID | Networks > Route<k>  (the k-th network statement)
+  Ports > <port> > Access-group In | Access-group Out | NAT Mode
+  ACL > <number or name>  (every line of the list, in order)
+  NAT > Inside Source List | Inside Source Static > NAT Source Setting <k>  (the k-th rule)
+  DHCP Server > Pools > Pool <name> > Network Address | Default Gateway | DNS server IP
+  DHCP Server > Excluded Addresses > <first> <last>
   Running Configuration > <line>, or > <block header> > <line inside it>
+
+Packet Tracer 8.2's wizard can't grade static routes (Routes > Static Routes
+has no items under it), PAT's `overload`, or whether the access list a NAT rule
+or access-group names exists: grade those with Running Configuration lines.
 
 Learnt from activities made in Packet Tracer 8.2's Activity Wizard (27 Oct
 2026; tests/fixtures/sample.pka and rich.pka are the originals) and from
@@ -76,8 +87,19 @@ _LEAVES = {
     "Router ID": ("1", "Routing"),
     "Route": ("1", "Routing"),  # OSPF > Process ID n > Networks > Route<k>
     "Line": ("8", "Other"),  # IOS Configuration > Running Configuration > LINES > NNN <line>
+    "Access-group In": ("2", "Acl"),
+    "Access-group Out": ("2", "Acl"),
+    "NAT Mode": ("3", "Nat"),
+    "ACL": ("2", "Acl"),  # ACL > <list>
+    "NAT Rule": ("3", "Nat"),  # NAT > Inside Source List | Inside Source Static > NAT Source Setting <k>
+    "Pool": ("0", "Ip"),  # DHCP Server > Pools > Pool <name> > <leaf>
+    "Excluded": ("0", "Ip"),  # DHCP Server > Excluded Addresses > <first> <last>
 }
-_HEADING_ECLASS = {"OSPF": "1", "VLANS": "5"}  # the subtree under a device; others "8"
+_HEADING_ECLASS = {"OSPF": "1", "VLANS": "5", "ACL": "2", "NAT": "3", "DHCP Server": "0"}  # others "8"
+# leaves whose tree ID isn't their name (rich2.pka, 27 Oct 2026)
+_LEAF_IDS = {"NAT Mode": "NAT", "DNS server IP": "DNS Server"}
+_POOL_LEAVES = {"Network Address": "network", "Default Gateway": "default-router", "DNS server IP": "dns-server"}
+_NAT_RULES = {"Inside Source List": "list", "Inside Source Static": "static"}
 _CONFIG = ("IOS Configuration", "Running Configuration", "LINES")
 _NOT_IN_NETS_1_2 = ("PIXMAPBANK", "MOVIEBANK", "COMMAND_LOGS")
 _AT_ACTIVITY_LEVEL = ("CEPS", "EXT_PORT_MGR")
@@ -224,10 +246,14 @@ def activity_from_xml(xml: bytes | str) -> Activity:
     initial, answer = (Network(copy.deepcopy(n), strict=False) for n in nets[1:])
     pages = [p.text or "" for p in root.iterfind("ACTIVITY/INSTRUCTIONS/PAGE")]
     starts = {path: value for path, value, *_ in _leaves(root.find("INITIALSETUP"), ticked_only=False)}
-    items = [
-        Item(path, value, starts.get(path, ""), points, component, node_id)
-        for path, value, points, component, node_id in _leaves(root.find("COMPARISONS"), ticked_only=True)
-    ]
+    items = []
+    for path, value, points, component, node_id in _leaves(root.find("COMPARISONS"), ticked_only=True):
+        # the wizard leaves out of INITIALSETUP what the start hasn't got (an ACL, a
+        # pool, NAT on a port: rich2.pka), so read those from the initial network
+        start = starts.get(path)
+        if start is None:
+            start = _value(initial, path, node_id) or ""
+        items.append(Item(path, value, start, points, component, node_id))
     return Activity(initial, answer, pages, items, _tests(nets[2], answer))
 
 
@@ -271,7 +297,53 @@ def _candidates(nets: Sequence[Network]) -> list[tuple[str, ...]]:
                 for x in (d, *others)
             ]
             out += [(name, "OSPF", f"Process ID {proc}", "Networks", f"Route{k}") for k in range(max(counts))]
+        if d.has_ios:
+            out += _ios_candidates(name, (d, *others))
     return out
+
+
+def _ios_candidates(name: str, devs: Sequence[Device]) -> list[tuple[str, ...]]:
+    """ACL, NAT and DHCP items for one router, over its copies in each network."""
+    out: list[tuple[str, ...]] = []
+    rcs = [x.running_config for x in devs]
+    ports = sorted(
+        {
+            t.split(maxsplit=1)[1]
+            for rc in rcs
+            for i, t in enumerate(rc)
+            if t.startswith("interface ")
+            and any(u.startswith(("ip access-group ", "ip nat ")) for u in _block(rc[i:], t) or [])
+        }
+    )
+    for port in ports:
+        out += [(name, "Ports", port, leaf) for leaf in ("Access-group In", "Access-group Out", "NAT Mode")]
+    acls = {t.split()[1] for rc in rcs for t in rc if t.startswith("access-list ")}
+    acls |= {t.split()[3] for rc in rcs for t in rc if re.match(r"ip access-list (standard|extended) \S+$", t)}
+    out += [(name, "ACL", a) for a in sorted(acls)]
+    statics = max(len(_nat_rules(x, "static")) for x in devs)
+    out += [(name, "NAT", "Inside Source Static", f"NAT Source Setting {k}") for k in range(1, statics + 1)]
+    pools = sorted({t.split()[3] for rc in rcs for t in rc if re.match(r"ip dhcp pool \S+$", t)})
+    out += [(name, "DHCP Server", "Pools", f"Pool {p}", leaf) for p in pools for leaf in _POOL_LEAVES]
+    excluded = {t.split(maxsplit=3)[3] for rc in rcs for t in rc if re.match(r"ip dhcp excluded-address \S+ \S+$", t)}
+    out += [(name, "DHCP Server", "Excluded Addresses", e) for e in sorted(excluded)]
+    return out
+
+
+def _graded_elsewhere(header: str | None, line: str) -> bool:
+    """Whether another item kind grades this config line (so it isn't graded twice).
+    `ip nat inside source list` stays a line: the wizard's item ignores `overload`."""
+    if (header or "").startswith(_GRADED_BLOCKS):
+        return True
+    text = line.strip()
+    if header is None or not line.startswith(" "):
+        return (
+            text.startswith(("access-list ", "ip access-list ", "ip dhcp pool "))
+            or re.fullmatch(r"ip dhcp excluded-address \S+ \S+", text) is not None
+            or re.fullmatch(r"ip nat inside source static \S+ \S+", text) is not None
+        )
+    if header.startswith("ip access-list "):
+        return True
+    return header.startswith("ip dhcp pool ") and text.startswith(tuple(v + " " for v in _POOL_LEAVES.values()))
 
 
 def diff_items(answer: Network, start: Network) -> list[tuple[str, ...]]:
@@ -293,7 +365,7 @@ def diff_items(answer: Network, start: Network) -> list[tuple[str, ...]]:
         for line in d.running_config:
             if not line.startswith(" "):
                 header = line
-            if _NOISE.match(line.strip()) or (header or "").startswith(_GRADED_BLOCKS):
+            if _NOISE.match(line.strip()) or _graded_elsewhere(header, line):
                 continue
             if line.startswith(" "):
                 if header is not None and _find_line(rc_start, header, line) is None:
@@ -341,6 +413,14 @@ def _kind(path: tuple[str, ...]) -> str | None:
         return "Line"
     if path[1] == "OSPF" and len(path) == 5 and path[3] == "Networks" and re.fullmatch(r"Route\d+", path[4]):
         return "Route"
+    if path[1] == "ACL" and len(path) == 3:
+        return "ACL"
+    if path[1] == "NAT" and len(path) == 4 and path[2] in _NAT_RULES:
+        return "NAT Rule" if re.fullmatch(r"NAT Source Setting [1-9]\d*", path[3]) else None
+    if path[1:3] == ("DHCP Server", "Pools") and len(path) == 5 and path[3].startswith("Pool "):
+        return "Pool" if path[4] in _POOL_LEAVES else None
+    if path[1:3] == ("DHCP Server", "Excluded Addresses") and len(path) == 4:
+        return "Excluded"
     leaf = path[-1]
     shapes = {
         "Host Name": len(path) == 2,
@@ -349,6 +429,9 @@ def _kind(path: tuple[str, ...]) -> str | None:
         "Subnet Mask": len(path) == 4 and path[1] == "Ports",
         "Access VLAN": len(path) == 4 and path[1] == "Ports",
         "Port Mode": len(path) == 4 and path[1] == "Ports",
+        "Access-group In": len(path) == 4 and path[1] == "Ports",
+        "Access-group Out": len(path) == 4 and path[1] == "Ports",
+        "NAT Mode": len(path) == 4 and path[1] == "Ports",
         "VLAN Name": len(path) == 4 and path[1] == "VLANS" and re.fullmatch(r"VLAN \d+", path[2]) is not None,
         "Router ID": len(path) == 4 and path[1] == "OSPF" and re.fullmatch(r"Process ID \d+", path[2]) is not None,
     }
@@ -375,9 +458,31 @@ def _tree_path(answer: Network, path: tuple[str, ...]) -> tuple[tuple[str, ...],
         # numbers can be off; with a wrong number the line still graded, shown as "Item"
         node_id = line if header is None else f"{header} {line.strip()}"
         return (dev, *_CONFIG, f"{at + 1:03} {line}"), node_id
-    if _kind(path) is None:
+    if path[1:2] == ("Routes",):
+        raise PktError(
+            f"{' > '.join(path)}: Packet Tracer 8.2's wizard can't grade static routes; "
+            "use a Running Configuration line (R1 > Running Configuration > ip route ...)"
+        )
+    kind = _kind(path)
+    if kind is None:
         raise PktError(f"pktlib can't write {' > '.join(path)!r} yet (see pktlib.activity for the kinds it knows)")
-    return path, ""
+    if kind == "NAT Rule":
+        return path, _nat_rule_id(answer, path)
+    leaf = path[len(path) - 1]
+    return path, _LEAF_IDS.get(leaf, "") if kind in ("NAT Mode", "Pool") else ""
+
+
+def _nat_rule_id(answer: Network, path: tuple[str, ...]) -> str:
+    """The tree ID of NAT > <kind> > NAT Source Setting <k>: the answer's k-th rule's."""
+    dev, _, which, setting = path
+    try:
+        rules = _nat_rules(answer.device(dev), _NAT_RULES[which])
+    except PktError:
+        raise PktError(f"{' > '.join(path)}: no device {dev!r} in the answer") from None
+    k = int(setting.split()[-1])
+    if k > len(rules):
+        raise PktError(f"{' > '.join(path)}: the answer's {dev} has {len(rules)} such NAT rules")
+    return rules[k - 1][0]
 
 
 def _node(
@@ -413,10 +518,13 @@ def _node(
 
 
 def _heading_id(path: tuple[str, ...], depth: int) -> str:
-    """A heading's ID: its name, except "Process ID 1" and "VLAN 10" (just the number)."""
+    """A heading's ID: its name, except "Process ID 1" and "VLAN 10" (just the
+    number) and "Pool LAN" (just the pool's name)."""
     name = path[depth]
     if depth == 2 and path[1] in ("OSPF", "VLANS"):
         return name.split()[-1]
+    if depth == 3 and path[1:3] == ("DHCP Server", "Pools"):
+        return name[len("Pool ") :]
     return name
 
 
@@ -477,16 +585,54 @@ def _find_line(rc: list[str], header: str | None, line: str) -> int | None:
     return None
 
 
-def _ospf_block(rc: list[str], process: str) -> list[str] | None:
-    want, body, found = f"router ospf {process}", [], False
+def _block(rc: list[str], header: str) -> list[str] | None:
+    """The lines inside the block `header` opens, stripped, or None if there's no such block."""
+    body: list[str] = []
+    found = False
     for text in rc:
         if not text.startswith(" "):
             if found:
                 break
-            found = text == want
+            found = text.rstrip() == header
         elif found:
             body.append(text.strip())
     return body if found else None
+
+
+def _ospf_block(rc: list[str], process: str) -> list[str] | None:
+    return _block(rc, f"router ospf {process}")
+
+
+def _acl_lines(rc: list[str], name: str) -> list[str]:
+    """An access list's lines, as the wizard joins them: `access-list 110 ...` lines
+    without the prefix, else the body of `ip access-list standard|extended <name>`."""
+    prefix = f"access-list {name} "
+    lines = [t[len(prefix) :].rstrip() for t in rc if t.startswith(prefix)]
+    for way in ("standard", "extended"):
+        lines += _block(rc, f"ip access-list {way} {name}") or []
+    return lines
+
+
+def _nat_rules(d: Device, which: str) -> list[tuple[str, str]]:
+    """(tree ID, value) for each `ip nat inside source list|static` rule, in order.
+    A list rule is ID the list's number, value the interface's full name; a static
+    one is ID and value "<local> <global> ", the trailing space as Packet Tracer
+    wrote it (rich2.pka, 27 Oct 2026). Forms not seen there are left out."""
+    out = []
+    for text in d.running_config:
+        words = text.split()
+        if words[:5] != ["ip", "nat", "inside", "source", which]:
+            continue
+        if which == "list" and len(words) >= 8 and words[6] == "interface":
+            try:
+                port = d.port(words[7]).name
+            except PktError:
+                port = words[7]
+            out.append((words[5], port))
+        elif which == "static" and len(words) == 7:
+            pair = f"{words[5]} {words[6]} "
+            out.append((pair, pair))
+    return out
 
 
 def _router_id(d: Device, body: list[str]) -> str:
@@ -542,6 +688,29 @@ def _value(net: Network, path: tuple[str, ...], node_id: str = "") -> str | None
         nets = [t.split() for t in body if t.startswith("network ")]
         k = int(path[4][len("Route") :])
         return f"{nets[k][1]} {nets[k][2]} {nets[k][4]}" if k < len(nets) and len(nets[k]) >= 5 else ""
+    rc = d.running_config
+    if kind == "ACL":
+        return "\n".join(_acl_lines(rc, path[2]))
+    if kind == "NAT Rule":
+        rules = _nat_rules(d, _NAT_RULES[path[2]])
+        if node_id:  # Packet Tracer finds the rule by its ID: the list's number, or the static pair
+            return next((value for rid, value in rules if rid == node_id), "")
+        k = int(path[3].split()[-1])
+        return rules[k - 1][1] if k <= len(rules) else ""
+    if kind == "Pool":
+        body = _block(rc, f"ip dhcp pool {path[3][len('Pool ') :]}") or []
+        key = _POOL_LEAVES[path[4]] + " "
+        return next((t.split()[1] for t in body if t.startswith(key)), "")
+    if kind == "Excluded":
+        return path[3] if f"ip dhcp excluded-address {path[3]}" in rc else ""
+    if kind in ("Access-group In", "Access-group Out", "NAT Mode"):
+        if path[2] not in d.ports and path[2] not in d.interfaces:
+            return None
+        body = _block(rc, f"interface {path[2]}") or []
+        if kind == "NAT Mode":  # the wizard showed 1 inside, 2 outside, 0 neither
+            return "1" if "ip nat inside" in body else "2" if "ip nat outside" in body else "0"
+        way = " in" if kind == "Access-group In" else " out"
+        return next((t.split()[2] for t in body if t.startswith("ip access-group ") and t.endswith(way)), "")
     # IP Address / Subnet Mask
     if d.has_ios:
         if path[2] not in d.ports and path[2] not in d.interfaces:

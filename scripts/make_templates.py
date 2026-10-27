@@ -52,7 +52,8 @@ def main() -> None:
     roots = [ET.fromstring(decode((SRC / f).read_bytes())) for f in FILES]
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("*.xml.gz"):
-        old.unlink()
+        if old.name != "activity.xml.gz":  # make_activity_template.py's
+            old.unlink()
     sources = list(SOURCES)
     for i in (1, 2):
         for d in req(roots[i], "NETWORK/DEVICES"):
