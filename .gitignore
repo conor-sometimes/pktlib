@@ -1,0 +1,24 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# build output
+out/
+*.pkt
+!scripts/sources/*.pkt
+!tests/fixtures/*.pkt
+.hypothesis/
+.pytest_cache/
+
+# Claude Code worktrees and local settings
+.claude/worktrees/
+.coverage
+soak/
+mutants/

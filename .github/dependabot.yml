@@ -1,0 +1,13 @@
+# Weekly pull requests to bump the GitHub Actions the workflows use (pinned by SHA,
+# with the version in a comment, which Dependabot keeps up to date).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    cooldown:
+      default-days: 7

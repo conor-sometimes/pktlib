@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use pktlib in teaching or research, please cite it as below."
+title: "pktlib: read, edit and write Cisco Packet Tracer files in Python"
+type: software
+authors:
+  - family-names: McShane
+    given-names: Conor
+version: 0.2.1
+date-released: "2026-10-27"
+license: MIT
+repository-code: "https://github.com/conor-sometimes/pktlib"
+keywords:
+  - cisco
+  - packet-tracer
+  - networking
+  - ccna
+  - education
+abstract: >-
+  A pure-Python library for reading, editing and writing Cisco Packet Tracer .pkt
+  files: build networks in code, check them before hand-in, and write labs with
+  planted faults, answer keys and grading.

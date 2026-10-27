@@ -1,0 +1,211 @@
+{
+ "examples/ccna/acl.py": {
+  "acl.pkt": "e008d1b604b347dd3b7625dd3614c70f42095eff7232fde688168b9c362046dd"
+ },
+ "examples/ccna/dhcp.py": {
+  "dhcp.pkt": "1f9b8f857a7aa1ba9889a7d505a2344fc3cdb76447c9d3395bac957ff2433dd1"
+ },
+ "examples/ccna/dhcp_snooping.py": {
+  "dhcp_snooping.pkt": "363aa97b0301ec15e6808c7050b4b9f7c2aee0f633173ceabc9ff62961253f9e"
+ },
+ "examples/ccna/eigrp.py": {
+  "eigrp.pkt": "46af406222d8615784498cda3facc433d3ddd5aad612ee7fe13b3149c16b3cd5"
+ },
+ "examples/ccna/etherchannel.py": {
+  "etherchannel.pkt": "0fba47e37e93d71f53fc3da42bb5d769befb244bdcb88090c1051a7710c90878"
+ },
+ "examples/ccna/hsrp.py": {
+  "hsrp.pkt": "ae8871d4392c5c5d0330116b43c9d8550a37637c44da30f30ae2135fc27930ac"
+ },
+ "examples/ccna/intervlan_mls.py": {
+  "intervlan_mls.pkt": "e253d301e31eba5cf8e910977f83d7e8a3ab552aefb24afcb5a8e5e501e36f58"
+ },
+ "examples/ccna/ipv6.py": {
+  "ipv6.pkt": "e311481cb622f364653df2b2a9f579adab1ff1f9937b82de0d4c8d4fae605871"
+ },
+ "examples/ccna/nat.py": {
+  "nat.pkt": "710753300dd84b827c8d2650745610933dcc4f5424cca69e62a8849a1c4ce0fe"
+ },
+ "examples/ccna/ospf_dr_election.py": {
+  "ospf_dr_election.pkt": "dad52563d14d3bd5e893671bf4fbbe16194537c78827274c44ff7253d72f9297"
+ },
+ "examples/ccna/ospf_multi_area.py": {
+  "ospf_multi_area.pkt": "f17ded90d53c8929365e2107843de85295fb0ac6adff03025e4c5867e9155a2b"
+ },
+ "examples/ccna/ospf_single_area.py": {
+  "ospf_single_area.pkt": "edfd0aab6d6b1b6d40ea7efad640fd04569724dae986dbbb6ab8906f0afb7d3d"
+ },
+ "examples/ccna/port_security.py": {
+  "port_security.pkt": "266b322699bc5d2ce3f460f0e9d39f1a36cb01ccb88a5d484c7303e77c7e7840"
+ },
+ "examples/ccna/ripv2.py": {
+  "ripv2.pkt": "8f4bb5387d8b5dfe5a57780731467b655133a09d48a6e2b245c530740039582a"
+ },
+ "examples/ccna/ssh.py": {
+  "ssh.pkt": "2b539ef090c8845656bb79b1d6cfd30e2932d8d8bfa16d701e60018691a2e408"
+ },
+ "examples/ccna/static_routes.py": {
+  "static_routes.pkt": "6b434f24c3ff0720c1258e6f32b84630c763c7ce4c817b058a84e03f213cbdb9"
+ },
+ "examples/ccna/stp.py": {
+  "stp.pkt": "40d486aaacb84ec02dc8ece5ed3468dc5d5ea2d98e3e2abd8c76f1ebeb04ab50"
+ },
+ "examples/ccna/vlans_trunks.py": {
+  "vlans_trunks.pkt": "b34c3baa2ac3128a4d0829c77e284aed7e9ba333a8f9c13f7f08651e15c01524"
+ },
+ "examples/ccna/voice_cme.py": {
+  "voice_cme.pkt": "8a634e1026e37038b26d4cfebe27011de55cd46083e9be481c434b51504058e0"
+ },
+ "examples/labs/fault_lab.py": {
+  "fault_lab.pkt": "6c3f61f7986cec2edfc42f9cf8a76cbf5b4f20595e34e634bf476ca0a79cf67f",
+  "fault_lab_solution.pkt": "1dd96d00db760550019ce9f7cd20c2dff9270e4711fbcff5f41953e93de75a88"
+ },
+ "examples/labs/ospf_ring.py": {
+  "ospf_ring.pkt": "1e9db14e18ee102780a918a24107175465018c63fed1a31078ae400d5c5ddddf"
+ },
+ "examples/labs/practice_lab.py": {
+  "practice_lab.pkt": "b98ebbfd38f8962ecc6e446c318362d8ecd4a220ed40e24f4f29375e01edb6b8"
+ },
+ "examples/labs/router_on_a_stick.py": {
+  "router_on_a_stick.pkt": "8f9621605bc1f2576e5889a8de6da17b5c3a72f424df55dbacde1d6154f2bda0"
+ },
+ "examples/recipes/addressing_csv.py": {
+  "sample.pkt": "71d17907ec9c160aa11dd63adc84d078b017591e5f539690a1fbfc549c5d7d21"
+ },
+ "examples/recipes/audit_folder.py": {
+  "aoife.pkt": "dcbe3e9c971349e5fd54ab1c3cd6630afa6d0f2200ec6bf692de2c677a77de44",
+  "bryan.pkt": "22402c576cc54d1a45cfef8945401bd2c9257f6b895406ac4944c9defe03f68d",
+  "ciara.pkt": "5a6270f6be98d30e3b7e90e41c0105878bf617480a3c5e5bd92df57e23e91af0",
+  "dmitri.pkt": "861b4c3757e341970179c8cd1845f70786f58c16c450a693aeb9d1d65bfe0408"
+ },
+ "examples/recipes/bulk_pcs.py": {
+  "classroom.pkt": "2b2db0ffb5b0a48211a56e62f0ed37f6a443acacf42306c5df1e2072e4e72ba1"
+ },
+ "examples/recipes/check_passwords.py": {
+  "sample.pkt": "aa2a0eececc2c8e064a8b14e65e033dc9229c9e6cc295233ab90d18c4497e6c8"
+ },
+ "examples/recipes/diff_pkt.py": {
+  "after.pkt": "fce80b2cac82879c402ff91c68c556c4e21af83ff986f6ed17cb9522a017fdc3",
+  "before.pkt": "0da9ce485fbae6361b2962e886314aa921bb2605dd3de0c4bcc201f20039f469"
+ },
+ "examples/recipes/find_vlan.py": {
+  "sample.pkt": "c9b26d32d265a78860abd10c913c57fbe307309138180a0bcf0ecff27b8d68cd"
+ },
+ "examples/recipes/grade_folder.py": {
+  "lab.pkt": "de7dcc34e3fdacd572c36e44a24399fb09e3099636b431436dba6b900c08d631",
+  "lab_solution.pkt": "2629430af6d1aa799be30553df69aaa0d1c126c994315f084a9042a7f09f59b0",
+  "niamh.pkt": "2629430af6d1aa799be30553df69aaa0d1c126c994315f084a9042a7f09f59b0",
+  "oisin.pkt": "33b7c53974e6b5fc9d29f26d762082fb2f32f7a6703c1abf958bc63f23d7e96e",
+  "padraig.pkt": "de7dcc34e3fdacd572c36e44a24399fb09e3099636b431436dba6b900c08d631",
+  "roisin.pkt": "b9a813ceae0ef380a77f061ae4d4a72fd308d13f07e2b617c3c9eeada37de13e"
+ },
+ "examples/recipes/inventory.py": {
+  "sample.pkt": "0329aacb0aead2392ed8bb5ffea91ebf42623b8432d11ca66db63649190e2b39"
+ },
+ "examples/recipes/random_labs.py": {
+  "lab01.pkt": "bd0d9f1fcb86a9060b859b27f1f1ce9b9e89be2ae11518e43986be7db638da34",
+  "lab01_solution.pkt": "e1bb305f5ba7480ec0659dd4e1c52fcad39a67f43547096ced8bd06843cbc7f3",
+  "lab02.pkt": "334124645bf4e56f834517a91f7798bc787a82c779f61b4f3427eff687de96f0",
+  "lab02_solution.pkt": "9e985675b8575244c35e7059a99307412be7055b98849acef13aafec6765e315",
+  "lab03.pkt": "fe98868b7e504b8f108fbde60a865efb9a74c6ad2b6d7e24dfdd150adb0dc541",
+  "lab03_solution.pkt": "2928f9f5f38d168f993abfa36c5c14b654b6a823e1a3a478f112aa261f71a3f2",
+  "lab04.pkt": "b0f0009c4f820da757cf527bc801fcbc804bacab142de83aa8299ad524e742d6",
+  "lab04_solution.pkt": "784add7d8aa784192c6891ed739f6cce840ca145bc37573745a86f029f691bf9",
+  "lab05.pkt": "e1a233317b68adc3d4d09455e8fb163c7e1205610ba8b1bb7fed13f504f1e9f7",
+  "lab05_solution.pkt": "364bcd583bf85899e0112b2e89c8b9758d58ecaf69ce3c64c179647790d98bc5"
+ },
+ "examples/recipes/rename_devices.py": {
+  "renamed.pkt": "b3733c012526a1876d719c22ad29b8676da8244a0dcd01c1a29e7294d9668fe0",
+  "sample.pkt": "599c76a29c88c7e9f451a16b82d78103c9276d50ee40efe6fbaf537b64755d63"
+ },
+ "examples/recipes/swap_model.py": {
+  "sample.pkt": "fc5f2e74840e92e554897868da99cbc256bdb041039ef3db60e19af5fa0f0af4",
+  "swapped.pkt": "ca3d8162fc73897c07a30f0087ad87797ece5bc3141e1c3b4f38c6ce36ec7851"
+ },
+ "examples/recipes/tidy_grid.py": {
+  "sample.pkt": "a8d4bec441aa7ebf08433dab43305c3dcf641fa1a11f7092749063db772135ca",
+  "tidy.pkt": "61387248306d89f6c2c0784d4dd5165159497986a70401cc0b26b4efc96d6370"
+ },
+ "examples/recipes/to_script.py": {
+  "rebuilt_sample.pkt": "99acbfd60cb1526057c8f9a3b13263d40a472f8cf7c82220d6fec56116f2e6af",
+  "sample.pkt": "1f6fc51ee8bbe0e93b38cf0757763055372d019ecbf8c77e4243210e03732acf"
+ },
+ "examples/showcase/campus.py": {
+  "campus.pkt": "644761fe052a2e22451b895962dc90dd9ad518d871d6e85d42584e8b146c43fd"
+ },
+ "examples/showcase/datacenter.py": {
+  "datacenter.pkt": "22c68f528a5519ec9006749f9b97158c486343c6cb298fb2e77d901ed8d06480"
+ },
+ "examples/showcase/datacentres.py": {
+  "datacentres.pkt": "f27af657064242de7d040b73d97e34b81494be2c242ae06b6e00c3022921f3f5"
+ },
+ "examples/showcase/enterprise.py": {
+  "enterprise.pkt": "8542da6a3397c2903f25e813b7c9d9a247abc14e5200404017ab0f0a2dc96293"
+ },
+ "examples/showcase/home_lab.py": {
+  "home_lab.pkt": "6fda7e0f1564e4d3feca5664ce74f1564606cebc747b131f924a63f20fae6f16"
+ },
+ "examples/showcase/hospital.py": {
+  "hospital.pkt": "709ac15b19d647c5cd3d72c21998cac43a8ddff65a797f09decace11bc39f813"
+ },
+ "examples/showcase/hub_and_spoke.py": {
+  "hub_and_spoke.pkt": "b55cc37c659be5f888e9bd31714d7e1bce3ea509233a3c97d9407736d2fa251c"
+ },
+ "examples/showcase/isp_backbone.py": {
+  "isp_backbone.pkt": "0c2d8521ebc063aa9998c4a7792748032c9d076e3ae5573eceee164fe4de2917"
+ },
+ "examples/showcase/redistribution.py": {
+  "redistribution.pkt": "5d0ee254418a83af644e1b58fb5fe50d1a090d7d02a1f8533d6365d41c2c3a16"
+ },
+ "examples/showcase/small_business.py": {
+  "small_business.pkt": "56bbb62097393b467cf575196481aba51efa3e1e2b82968f758d9eaffc44318a"
+ },
+ "examples/showcase/solar_system.py": {
+  "solar_system.pkt": "f8fa2fc9082f8a0c9a844286afbada3c34be1bddb66640d6bc0d76c8c2ee5267"
+ },
+ "examples/showcase/starship.py": {
+  "starship.pkt": "30f1fd494f25d2d2000bb6aaf2a4d21ef81246e4dba472b5df962829b45c6776"
+ },
+ "stress/routing/rt01_three_protocols.py": {
+  "rt01_three_protocols.pkt": "814eeee9d9ad4c471fa822b53cf72dd7479943721f0dcc163948dbfef85e30e6"
+ },
+ "stress/routing/rt02_ospf_areas.py": {
+  "rt02_ospf_areas.pkt": "eafc72f24616ecef64c61fb3a2d523162ab8dafcdf35382b9c36e139e987e01f"
+ },
+ "stress/routing/rt03_bgp_ases.py": {
+  "rt03_bgp_ases.pkt": "f94adf52872776fb9e731aa73ee183c2225483082c4e642f8264804934b98065"
+ },
+ "stress/routing/rt04_nat_acl_dhcp.py": {
+  "rt04_nat_acl_dhcp.pkt": "bba73388daa6ed31e36f49e74376a827e582cd2d2e2e1111f65ce5f9088b2efd"
+ },
+ "stress/routing/rt05_dual_stack_gre.py": {
+  "rt05_dual_stack_gre.pkt": "188424a16e7995d2e9f7d9ee8e4b8cee494b906846259a8e287833150c26ed34"
+ },
+ "stress/routing/rt06_long_ring_chain.py": {
+  "rt06_long_ring_chain.pkt": "000d2b30a4e623283ca4c4ea7d7a285bfaa1ff02675f12592f5b4842271fa43d"
+ },
+ "stress/routing/rt07_home_isp.py": {
+  "rt07_home_isp.pkt": "2981784078240f4c51391af7871dd599cda9f3820a77fceb4b3d60aa309c7d07"
+ },
+ "stress/switching/sw01_many_channels.py": {
+  "sw01_many_channels.pkt": "39d803204603deffccff5f33a9cd95465e91ccff9c7e46977bdf0ff3b5e97d37"
+ },
+ "stress/switching/sw02_rpvst_roots.py": {
+  "sw02_rpvst_roots.pkt": "a7ac6f16828a5a50bfc6c41c0fba4e6e05ce64046693aeee2939f095e13bedf2"
+ },
+ "stress/switching/sw03_hsrp_relay.py": {
+  "sw03_hsrp_relay.pkt": "0b2ceb795c5e835ad8d53792ee26de48cae7a51922b0138223fd1fab4108ab03"
+ },
+ "stress/switching/sw04_roas_subifs.py": {
+  "sw04_roas_subifs.pkt": "b7bdbf90281d16c23fe255e1a250781ca52cd4c554199adeb70df9b784dcffa2"
+ },
+ "stress/switching/sw05_voice_poe_security.py": {
+  "sw05_voice_poe_security.pkt": "c5196837ab1df657eda3f32ad6530416d97e6985a8c4c7a24c58c07a7f2b48e6"
+ },
+ "stress/switching/sw06_mls_fanout.py": {
+  "sw06_mls_fanout.pkt": "74af3a4156d018a8adeaf826f7cec6667b6372b78693cf1e3cc9e927efba82b3"
+ },
+ "stress/switching/sw07_modules_esw.py": {
+  "sw07_modules_esw.pkt": "a23fa254e99f3462c7e55cb2954d1ccb164fbe417a81a9681814f697ff23500f"
+ }
+}

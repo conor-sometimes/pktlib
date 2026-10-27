@@ -1,0 +1,114 @@
+[project]
+name = "pktlib"
+version = "0.2.1"
+description = "Read, edit and write Cisco Packet Tracer .pkt files in Python"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = []
+authors = [{ name = "Conor McShane", email = "conor.d.mcshane@outlook.com" }]
+keywords = ["cisco", "packet-tracer", "pkt", "ccna", "networking", "network-labs", "netacad"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Education",
+    "Topic :: System :: Networking",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/conor-sometimes/pktlib"
+Issues = "https://github.com/conor-sometimes/pktlib/issues"
+
+[project.scripts]
+pktlib = "pktlib._cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.168.5",
+    "mutmut>=3.8.0",
+    "mypy>=2.4.0",
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "pytest-randomly>=5.0.0",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.17.2",
+    "ty>=0.0.92",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# every core (pytest-xdist), a fresh random order each run (pytest-randomly; -p no:randomly
+# to turn it off, -p randomly -p "randomly_seed=N" to repeat one), and no surprises: an
+# unexpected warning fails, a typo'd marker or setting is an error, an xfail that passes fails
+addopts = ["-n", "auto", "-ra", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["pktlib"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 95  # line and branch coverage of the package; CI fails below it
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F",  # pycodestyle, pyflakes
+    "I",            # import order
+    "UP",           # pyupgrade, for the oldest supported Python
+    "B",            # bugbear
+    "BLE",          # blind except
+    "C4",           # comprehensions
+    "SIM",          # simplify
+    "FBT",          # boolean positional arguments
+    "ANN",          # annotations on the public API
+    "RUF",
+]
+ignore = [
+    "RUF005",  # [*a, b] over a + [b] is taste, not correctness
+    "SIM108",  # a ternary is not always clearer than an if/else
+]
+
+[tool.ruff.lint.per-file-ignores]
+# scripts and tests: no annotations required; `l` for a line is left alone outside the package
+"tests/**" = ["ANN", "FBT", "E741"]
+"{examples,stress,scripts}/**" = ["ANN", "FBT", "E741"]
+
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.mutmut]
+# `just mutate`: plant small bugs in the package and check a test catches each one. Slow, so
+# it isn't part of `just check`. The slow random suites are left out: the targeted tests are
+# what should catch a planted bug.
+paths_to_mutate = ["src/pktlib/"]
+also_copy = ["src/pktlib/data/", "src/pktlib/spec/", "tests/", "examples/", "stress/", "scripts/", "docs/", "README.md", "CHANGELOG.md", "CLAUDE.md", "LICENSE", "CITATION.cff"]
+pytest_add_cli_args = ["-n0", "-p", "no:randomly", "-x", "-q"]
+pytest_add_cli_args_test_selection = [
+    "tests/",
+    "--deselect=tests/test_stateful.py",
+    "--deselect=tests/test_fuzz_files.py",
+    "--deselect=tests/test_properties.py",
+]

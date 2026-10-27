@@ -1,0 +1,2068 @@
+{
+ "1841": {
+  "accepts": [
+   "HWIC-1GE-SFP",
+   "HWIC-2T",
+   "HWIC-4ESW",
+   "HWIC-8A",
+   "HWIC-AP-AG-B",
+   "WIC-1AM",
+   "WIC-1ENET",
+   "WIC-1T",
+   "WIC-2AM",
+   "WIC-2T",
+   "WIC-Cover",
+   "GLC-LH-SMD"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2
+  },
+  "template": "model-1841",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/0",
+   "FastEthernet0/1"
+  ]
+ },
+ "1841+WIC-2T": {
+  "accepts": [
+   "HWIC-1GE-SFP",
+   "HWIC-2T",
+   "HWIC-4ESW",
+   "HWIC-8A",
+   "HWIC-AP-AG-B",
+   "WIC-1AM",
+   "WIC-1ENET",
+   "WIC-1T",
+   "WIC-2AM",
+   "WIC-2T",
+   "WIC-Cover",
+   "GLC-LH-SMD"
+  ],
+  "family": "router",
+  "fitted": [
+   "WIC-2T"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2
+  },
+  "template": "router-1841-wic2t",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/0",
+   "FastEthernet0/1",
+   "Serial0/0/0",
+   "Serial0/0/1"
+  ]
+ },
+ "1941": {
+  "accepts": [
+   "HWIC-1GE-SFP",
+   "HWIC-2T",
+   "HWIC-4ESW",
+   "HWIC-8A",
+   "WIC-Cover",
+   "GLC-LH-SMD"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2
+  },
+  "template": "model-1941",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0/0",
+   "GigabitEthernet0/1"
+  ]
+ },
+ "2620XM": {
+  "accepts": [
+   "NM-1E",
+   "NM-1E2W",
+   "NM-1FE-FX",
+   "NM-1FE-TX",
+   "NM-1FE2W",
+   "NM-2E2W",
+   "NM-2FE2W",
+   "NM-2W",
+   "NM-4A/S",
+   "NM-4E",
+   "NM-8A/S",
+   "NM-8AM",
+   "NM-Cover",
+   "WIC-1AM",
+   "WIC-1T",
+   "WIC-2AM",
+   "WIC-2T",
+   "WIC-Cover"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2,
+   "eNetworkModule": 1
+  },
+  "template": "model-2620XM",
+  "verified": "ios-config",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0/0"
+  ]
+ },
+ "2621XM": {
+  "accepts": [
+   "NM-1E",
+   "NM-1E2W",
+   "NM-1FE-FX",
+   "NM-1FE-TX",
+   "NM-1FE2W",
+   "NM-2E2W",
+   "NM-2FE2W",
+   "NM-2W",
+   "NM-4A/S",
+   "NM-4E",
+   "NM-8A/S",
+   "NM-8AM",
+   "NM-Cover",
+   "WIC-1AM",
+   "WIC-1T",
+   "WIC-2AM",
+   "WIC-2T",
+   "WIC-Cover"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2,
+   "eNetworkModule": 1
+  },
+  "template": "model-2621XM",
+  "verified": "ios-config",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0/0",
+   "FastEthernet0/1"
+  ]
+ },
+ "2811": {
+  "accepts": [
+   "NM-1E",
+   "NM-1E2W",
+   "NM-1FE-FX",
+   "NM-1FE-TX",
+   "NM-1FE2W",
+   "NM-2E2W",
+   "NM-2FE2W",
+   "NM-2W",
+   "NM-4A/S",
+   "NM-4E",
+   "NM-8A/S",
+   "NM-8AM",
+   "NM-Cover",
+   "NM-ESW-161",
+   "HWIC-1GE-SFP",
+   "HWIC-2T",
+   "HWIC-4ESW",
+   "HWIC-8A",
+   "HWIC-AP-AG-B",
+   "WIC-1AM",
+   "WIC-1ENET",
+   "WIC-1T",
+   "WIC-2AM",
+   "WIC-2T",
+   "WIC-Cover"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 4,
+   "eNetworkModule": 1
+  },
+  "template": "model-2811",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/0",
+   "FastEthernet0/1"
+  ]
+ },
+ "2901": {
+  "accepts": [
+   "HWIC-1GE-SFP",
+   "HWIC-2T",
+   "HWIC-4ESW",
+   "HWIC-8A",
+   "WIC-Cover",
+   "GLC-LH-SMD"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 4
+  },
+  "template": "model-2901",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0/0",
+   "GigabitEthernet0/1"
+  ]
+ },
+ "2911": {
+  "accepts": [
+   "HWIC-1GE-SFP",
+   "HWIC-2T",
+   "HWIC-4ESW",
+   "HWIC-8A",
+   "WIC-Cover",
+   "GLC-LH-SMD"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 4
+  },
+  "template": "model-2911",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0/0",
+   "GigabitEthernet0/1",
+   "GigabitEthernet0/2"
+  ]
+ },
+ "2950-24": {
+  "accepts": [],
+  "family": "switch",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Switch",
+  "powered": true,
+  "slots": {},
+  "template": "model-2950-24",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/1",
+   "FastEthernet0/2",
+   "FastEthernet0/3",
+   "FastEthernet0/4",
+   "FastEthernet0/5",
+   "FastEthernet0/6",
+   "FastEthernet0/7",
+   "FastEthernet0/8",
+   "FastEthernet0/9",
+   "FastEthernet0/10",
+   "FastEthernet0/11",
+   "FastEthernet0/12",
+   "FastEthernet0/13",
+   "FastEthernet0/14",
+   "FastEthernet0/15",
+   "FastEthernet0/16",
+   "FastEthernet0/17",
+   "FastEthernet0/18",
+   "FastEthernet0/19",
+   "FastEthernet0/20",
+   "FastEthernet0/21",
+   "FastEthernet0/22",
+   "FastEthernet0/23",
+   "FastEthernet0/24"
+  ]
+ },
+ "2950T-24": {
+  "accepts": [],
+  "family": "switch",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Switch",
+  "powered": true,
+  "slots": {},
+  "template": "model-2950T-24",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/1",
+   "FastEthernet0/2",
+   "FastEthernet0/3",
+   "FastEthernet0/4",
+   "FastEthernet0/5",
+   "FastEthernet0/6",
+   "FastEthernet0/7",
+   "FastEthernet0/8",
+   "FastEthernet0/9",
+   "FastEthernet0/10",
+   "FastEthernet0/11",
+   "FastEthernet0/12",
+   "FastEthernet0/13",
+   "FastEthernet0/14",
+   "FastEthernet0/15",
+   "FastEthernet0/16",
+   "FastEthernet0/17",
+   "FastEthernet0/18",
+   "FastEthernet0/19",
+   "FastEthernet0/20",
+   "FastEthernet0/21",
+   "FastEthernet0/22",
+   "FastEthernet0/23",
+   "FastEthernet0/24",
+   "GigabitEthernet0/1",
+   "GigabitEthernet0/2"
+  ]
+ },
+ "2960-24TT": {
+  "accepts": [],
+  "family": "switch",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Switch",
+  "powered": true,
+  "slots": {},
+  "template": "model-2960-24TT",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/1",
+   "FastEthernet0/2",
+   "FastEthernet0/3",
+   "FastEthernet0/4",
+   "FastEthernet0/5",
+   "FastEthernet0/6",
+   "FastEthernet0/7",
+   "FastEthernet0/8",
+   "FastEthernet0/9",
+   "FastEthernet0/10",
+   "FastEthernet0/11",
+   "FastEthernet0/12",
+   "FastEthernet0/13",
+   "FastEthernet0/14",
+   "FastEthernet0/15",
+   "FastEthernet0/16",
+   "FastEthernet0/17",
+   "FastEthernet0/18",
+   "FastEthernet0/19",
+   "FastEthernet0/20",
+   "FastEthernet0/21",
+   "FastEthernet0/22",
+   "FastEthernet0/23",
+   "FastEthernet0/24",
+   "GigabitEthernet0/1",
+   "GigabitEthernet0/2"
+  ]
+ },
+ "3560-24PS": {
+  "accepts": [],
+  "family": "multilayer",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "MultiLayerSwitch",
+  "powered": true,
+  "slots": {},
+  "template": "model-3560-24PS",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/1",
+   "FastEthernet0/2",
+   "FastEthernet0/3",
+   "FastEthernet0/4",
+   "FastEthernet0/5",
+   "FastEthernet0/6",
+   "FastEthernet0/7",
+   "FastEthernet0/8",
+   "FastEthernet0/9",
+   "FastEthernet0/10",
+   "FastEthernet0/11",
+   "FastEthernet0/12",
+   "FastEthernet0/13",
+   "FastEthernet0/14",
+   "FastEthernet0/15",
+   "FastEthernet0/16",
+   "FastEthernet0/17",
+   "FastEthernet0/18",
+   "FastEthernet0/19",
+   "FastEthernet0/20",
+   "FastEthernet0/21",
+   "FastEthernet0/22",
+   "FastEthernet0/23",
+   "FastEthernet0/24",
+   "GigabitEthernet0/1",
+   "GigabitEthernet0/2"
+  ]
+ },
+ "3650-24PS": {
+  "accepts": [
+   "AC-POWER-SUPPLY",
+   "POWER-COVER-PLATE",
+   "GLC-LH-SMD",
+   "GLC-T",
+   "GLC-TE"
+  ],
+  "family": "multilayer",
+  "fitted": [
+   "AC-POWER-SUPPLY"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "MultiLayerSwitch",
+  "powered": true,
+  "slots": {
+   "ePtSwitchModule": 2,
+   "eSfpModule": 4
+  },
+  "template": "model-3650-24PS",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet1/0/1",
+   "GigabitEthernet1/0/2",
+   "GigabitEthernet1/0/3",
+   "GigabitEthernet1/0/4",
+   "GigabitEthernet1/0/5",
+   "GigabitEthernet1/0/6",
+   "GigabitEthernet1/0/7",
+   "GigabitEthernet1/0/8",
+   "GigabitEthernet1/0/9",
+   "GigabitEthernet1/0/10",
+   "GigabitEthernet1/0/11",
+   "GigabitEthernet1/0/12",
+   "GigabitEthernet1/0/13",
+   "GigabitEthernet1/0/14",
+   "GigabitEthernet1/0/15",
+   "GigabitEthernet1/0/16",
+   "GigabitEthernet1/0/17",
+   "GigabitEthernet1/0/18",
+   "GigabitEthernet1/0/19",
+   "GigabitEthernet1/0/20",
+   "GigabitEthernet1/0/21",
+   "GigabitEthernet1/0/22",
+   "GigabitEthernet1/0/23",
+   "GigabitEthernet1/0/24",
+   "GigabitEthernet1/1/1",
+   "GigabitEthernet1/1/2",
+   "GigabitEthernet1/1/3",
+   "GigabitEthernet1/1/4"
+  ]
+ },
+ "3702i": {
+  "accepts": [
+   "ACCESS_POINT_POWER_ADAPTER"
+  ],
+  "family": "lightweightaccesspoint",
+  "fitted": [
+   "ACCESS_POINT_POWER_ADAPTER"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "LightWeightAccessPoint",
+  "port_names": [
+   "GigabitEthernet0",
+   "Dot11Radio0"
+  ],
+  "powered": true,
+  "slots": {
+   "eAccessPointPowerAdaptor": 1
+  },
+  "template": "model-3702i",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "GigabitEthernet0"
+  ]
+ },
+ "5505": {
+  "accepts": [],
+  "family": "asa",
+  "fitted": [
+   "ASA-Cover"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "ASA",
+  "powered": true,
+  "slots": {
+   "eASAModule": 1
+  },
+  "template": "model-5505",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "Ethernet0/0",
+   "Ethernet0/1",
+   "Ethernet0/2",
+   "Ethernet0/3",
+   "Ethernet0/4",
+   "Ethernet0/5",
+   "Ethernet0/6",
+   "Ethernet0/7"
+  ]
+ },
+ "5506-X": {
+  "accepts": [],
+  "family": "asa",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "ASA",
+  "powered": true,
+  "slots": {},
+  "template": "model-5506-X",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet1/1",
+   "GigabitEthernet1/2",
+   "GigabitEthernet1/3",
+   "GigabitEthernet1/4",
+   "GigabitEthernet1/5",
+   "GigabitEthernet1/6",
+   "GigabitEthernet1/7",
+   "GigabitEthernet1/8",
+   "Management1/1"
+  ]
+ },
+ "7960": {
+  "accepts": [
+   "IP_PHONE_POWER_ADAPTER"
+  ],
+  "family": "phone",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "IpPhone",
+  "port_names": [
+   "Switch",
+   "PC"
+  ],
+  "powered": true,
+  "slots": {
+   "eIpPhonePowerAdapter": 1
+  },
+  "template": "model-7960",
+  "verified": "pt-menu",
+  "vlan_database": true,
+  "wired": [
+   "Switch",
+   "PC"
+  ]
+ },
+ "819HG-4G-IOX": {
+  "accepts": [],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "port_names": [
+   "GigabitEthernet0",
+   "FastEthernet0",
+   "FastEthernet1",
+   "FastEthernet2",
+   "FastEthernet3",
+   "Serial0",
+   "Ethernet1",
+   "VirtualPortGroup0",
+   "Cellular0",
+   null,
+   null
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-819HG-4G-IOX",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0",
+   "FastEthernet0",
+   "FastEthernet1",
+   "FastEthernet2",
+   "FastEthernet3",
+   "Serial0",
+   "Ethernet1"
+  ]
+ },
+ "819HGW": {
+  "accepts": [],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "port_names": [
+   "GigabitEthernet0",
+   "FastEthernet0",
+   "FastEthernet1",
+   "FastEthernet2",
+   "FastEthernet3",
+   "Serial0",
+   "Wlan-GigabitEthernet0",
+   "wlan-ap0",
+   "Cellular0",
+   null,
+   null,
+   null
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-819HGW",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0",
+   "FastEthernet0",
+   "FastEthernet1",
+   "FastEthernet2",
+   "FastEthernet3",
+   "Serial0"
+  ]
+ },
+ "829": {
+  "accepts": [
+   "GLC-T",
+   "GLC-TE"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "port_names": [
+   "GigabitEthernet0",
+   "GigabitEthernet1",
+   "GigabitEthernet2",
+   "GigabitEthernet3",
+   "GigabitEthernet4",
+   "wlan-ap0",
+   "Wlan-GigabitEthernet0",
+   "GigabitEthernet5",
+   "Cellular0",
+   "Cellular1",
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "powered": true,
+  "slots": {
+   "eSfpModule": 1
+  },
+  "template": "model-829",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0",
+   "GigabitEthernet1",
+   "GigabitEthernet2",
+   "GigabitEthernet3",
+   "GigabitEthernet4",
+   "GigabitEthernet5"
+  ]
+ },
+ "AccessPoint-PT": {
+  "accepts": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CGE",
+   "PT-REPEATER-NM-1FFE",
+   "PT-REPEATER-NM-1FGE",
+   "PT-REPEATER-NM-COVER"
+  ],
+  "family": "accesspoint",
+  "fitted": [
+   "PT-REPEATER-NM-1CFE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "AccessPoint",
+  "port_names": [
+   "Port 0",
+   "Port 1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtRepeaterModule": 1
+  },
+  "template": "model-AccessPoint-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0"
+  ]
+ },
+ "AccessPoint-PT-A": {
+  "accepts": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CGE",
+   "PT-REPEATER-NM-1FFE",
+   "PT-REPEATER-NM-1FGE",
+   "PT-REPEATER-NM-COVER"
+  ],
+  "family": "accesspoint",
+  "fitted": [
+   "PT-REPEATER-NM-1CFE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "AccessPoint",
+  "port_names": [
+   "Port 0",
+   "Port 1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtRepeaterModule": 1
+  },
+  "template": "model-AccessPoint-PT-A",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0"
+  ]
+ },
+ "AccessPoint-PT-AC": {
+  "accepts": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CGE",
+   "PT-REPEATER-NM-1FFE",
+   "PT-REPEATER-NM-1FGE",
+   "PT-REPEATER-NM-COVER"
+  ],
+  "family": "accesspoint",
+  "fitted": [
+   "PT-REPEATER-NM-1CGE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "AccessPoint",
+  "port_names": [
+   "Port 0",
+   "Port 1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtRepeaterModule": 1
+  },
+  "template": "model-AccessPoint-PT-AC",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0"
+  ]
+ },
+ "AccessPoint-PT-N": {
+  "accepts": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CGE",
+   "PT-REPEATER-NM-1FFE",
+   "PT-REPEATER-NM-1FGE",
+   "PT-REPEATER-NM-COVER"
+  ],
+  "family": "accesspoint",
+  "fitted": [
+   "PT-REPEATER-NM-1CFE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "AccessPoint",
+  "port_names": [
+   "Port 0",
+   "Port 1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtRepeaterModule": 1
+  },
+  "template": "model-AccessPoint-PT-N",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0"
+  ]
+ },
+ "Analog-Phone-PT": {
+  "accepts": [],
+  "family": "analogphone",
+  "fitted": [],
+  "gateway": false,
+  "ios": false,
+  "kind": "AnalogPhone",
+  "port_names": [
+   "Port 0"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-Analog-Phone-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0"
+  ]
+ },
+ "Bridge-PT": {
+  "accepts": [
+   "PT-SWITCH-NM-1CE",
+   "PT-SWITCH-NM-1CFE",
+   "PT-SWITCH-NM-1CGE",
+   "PT-SWITCH-NM-1FFE",
+   "PT-SWITCH-NM-1FGE",
+   "PT-SWITCH-NM-COVER"
+  ],
+  "family": "bridge",
+  "fitted": [
+   "PT-SWITCH-NM-1CE",
+   "PT-SWITCH-NM-1CE"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "Bridge",
+  "port_names": [
+   "Ethernet0/1",
+   "Ethernet1/1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtSwitchModule": 2
+  },
+  "template": "model-Bridge-PT",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "Ethernet0/1",
+   "Ethernet1/1"
+  ]
+ },
+ "CGR1240": {
+  "accepts": [
+   "1240-Cover",
+   "ROUTER-ADAPTER",
+   "GLC-FE-100FX-RGD"
+  ],
+  "family": "router",
+  "fitted": [
+   "ROUTER-ADAPTER"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "port_names": [
+   "GigabitEthernet0/1",
+   "FastEthernet2/3",
+   "FastEthernet2/4",
+   "FastEthernet2/5",
+   "FastEthernet2/6",
+   "GigabitEthernet2/1",
+   "GigabitEthernet2/2",
+   "Dot11Radio2/1"
+  ],
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 4,
+   "ePtRouterPowerAdapter": 1,
+   "eSfpModule": 2
+  },
+  "template": "model-CGR1240",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0/1",
+   "FastEthernet2/3",
+   "FastEthernet2/4",
+   "FastEthernet2/5",
+   "FastEthernet2/6",
+   "GigabitEthernet2/1",
+   "GigabitEthernet2/2"
+  ]
+ },
+ "Cable-Modem-PT": {
+  "accepts": [
+   "PT-MODEM-NM-1CE",
+   "PT-MODEM-NM-1CFE",
+   "PT-MODEM-NM-1CGE"
+  ],
+  "family": "cablemodem",
+  "fitted": [
+   "PT-MODEM-NM-1CFE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "CableModem",
+  "port_names": [
+   "Port 0",
+   "Port 1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtModemModule": 1
+  },
+  "template": "model-Cable-Modem-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0",
+   "Port 1"
+  ]
+ },
+ "Cell-Tower": {
+  "accepts": [
+   "PT-CELL-NM-1CX",
+   "PT-CELL-NM-3G/4G"
+  ],
+  "family": "celltower",
+  "fitted": [
+   "PT-CELL-NM-1CX"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "CellTower",
+  "port_names": [
+   "Coaxial0",
+   "3G/4G Server1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtCellTowerModule": 1
+  },
+  "template": "model-Cell-Tower",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Coaxial0"
+  ]
+ },
+ "Central-Office-Server": {
+  "accepts": [],
+  "family": "centralofficeserver",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "CentralOfficeServer",
+  "port_names": [
+   "Backbone",
+   "Coaxial0/0",
+   "Coaxial0/1",
+   "Coaxial0/2",
+   "Coaxial0/3",
+   "Coaxial0/4",
+   "Coaxial0/5",
+   "Cellular0/0"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-Central-Office-Server",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "Backbone",
+   "Coaxial0/0",
+   "Coaxial0/1",
+   "Coaxial0/2",
+   "Coaxial0/3",
+   "Coaxial0/4",
+   "Coaxial0/5"
+  ]
+ },
+ "Cloud-PT": {
+  "accepts": [
+   "PT-CLOUD-NM-1AM",
+   "PT-CLOUD-NM-1CE",
+   "PT-CLOUD-NM-1CFE",
+   "PT-CLOUD-NM-1CGE",
+   "PT-CLOUD-NM-1CX",
+   "PT-CLOUD-NM-1FFE",
+   "PT-CLOUD-NM-1FGE",
+   "PT-CLOUD-NM-1S"
+  ],
+  "family": "cloud",
+  "fitted": [
+   "PT-CLOUD-NM-1AM",
+   "PT-CLOUD-NM-1AM",
+   "PT-CLOUD-NM-1CE",
+   "PT-CLOUD-NM-1CX",
+   "PT-CLOUD-NM-1S",
+   "PT-CLOUD-NM-1S",
+   "PT-CLOUD-NM-1S",
+   "PT-CLOUD-NM-1S"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "Cloud",
+  "port_names": [
+   "Serial0",
+   "Serial1",
+   "Serial2",
+   "Serial3",
+   "Modem4",
+   "Modem5",
+   "Ethernet6",
+   "Coaxial7"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtCloudModule": 10
+  },
+  "template": "model-Cloud-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Serial0",
+   "Serial1",
+   "Serial2",
+   "Serial3",
+   "Modem4",
+   "Modem5",
+   "Ethernet6",
+   "Coaxial7"
+  ]
+ },
+ "Cloud-PT-Empty": {
+  "accepts": [
+   "PT-CLOUD-NM-1AM",
+   "PT-CLOUD-NM-1CE",
+   "PT-CLOUD-NM-1CFE",
+   "PT-CLOUD-NM-1CGE",
+   "PT-CLOUD-NM-1CX",
+   "PT-CLOUD-NM-1FFE",
+   "PT-CLOUD-NM-1FGE",
+   "PT-CLOUD-NM-1S"
+  ],
+  "family": "cloud",
+  "fitted": [],
+  "gateway": false,
+  "ios": false,
+  "kind": "Cloud",
+  "port_names": [],
+  "powered": true,
+  "slots": {
+   "ePtCloudModule": 10
+  },
+  "template": "model-Cloud-PT-Empty",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": []
+ },
+ "CoAxialSplitter-PT": {
+  "accepts": [],
+  "family": "coaxialsplitter",
+  "fitted": [],
+  "gateway": false,
+  "ios": false,
+  "kind": "CoAxialSplitter",
+  "port_names": [
+   "Coaxial0",
+   "Coaxial1",
+   "Coaxial2"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-CoAxialSplitter-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Coaxial0",
+   "Coaxial1",
+   "Coaxial2"
+  ]
+ },
+ "DLC100": {
+  "accepts": [],
+  "family": "homegateway",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "HomeGateway",
+  "port_names": [
+   "Internet",
+   "Ethernet 1",
+   "Ethernet 2",
+   "Ethernet 3",
+   "Ethernet 4",
+   "Wireless"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-DLC100",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "Internet",
+   "Ethernet 1",
+   "Ethernet 2",
+   "Ethernet 3",
+   "Ethernet 4"
+  ]
+ },
+ "DSL-Modem-PT": {
+  "accepts": [
+   "PT-MODEM-NM-1CE",
+   "PT-MODEM-NM-1CFE",
+   "PT-MODEM-NM-1CGE"
+  ],
+  "family": "dslmodem",
+  "fitted": [
+   "PT-MODEM-NM-1CFE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "DslModem",
+  "port_names": [
+   "Port 0",
+   "Port 1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtModemModule": 1
+  },
+  "template": "model-DSL-Modem-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0",
+   "Port 1"
+  ]
+ },
+ "Home-VoIP-PT": {
+  "accepts": [],
+  "family": "homevoip",
+  "fitted": [],
+  "gateway": true,
+  "ios": false,
+  "kind": "HomeVoip",
+  "port_names": [
+   "Ethernet",
+   "Phone"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-Home-VoIP-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Ethernet",
+   "Phone"
+  ]
+ },
+ "HomeRouter-PT-AC": {
+  "accepts": [],
+  "family": "wirelessrouternewgeneration",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "WirelessRouterNewGeneration",
+  "port_names": [
+   "Internet",
+   "GigabitEthernet 1",
+   "GigabitEthernet 2",
+   "GigabitEthernet 3",
+   "GigabitEthernet 4",
+   "Wireless 1",
+   "Wireless 2",
+   "Wireless 3",
+   "Wireless 4",
+   "Wireless 5",
+   "Wireless 6",
+   "Wireless0/0"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-HomeRouter-PT-AC",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "Internet",
+   "GigabitEthernet 1",
+   "GigabitEthernet 2",
+   "GigabitEthernet 3",
+   "GigabitEthernet 4"
+  ]
+ },
+ "Hub-PT": {
+  "accepts": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CGE",
+   "PT-REPEATER-NM-1FFE",
+   "PT-REPEATER-NM-1FGE",
+   "PT-REPEATER-NM-COVER"
+  ],
+  "family": "hub",
+  "fitted": [
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CFE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "Hub",
+  "port_names": [
+   "FastEthernet0",
+   "FastEthernet1",
+   "FastEthernet2",
+   "FastEthernet3",
+   "FastEthernet4",
+   "FastEthernet5"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtRepeaterModule": 10
+  },
+  "template": "model-Hub-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0",
+   "FastEthernet1",
+   "FastEthernet2",
+   "FastEthernet3",
+   "FastEthernet4",
+   "FastEthernet5"
+  ]
+ },
+ "IE-2000": {
+  "accepts": [],
+  "family": "multilayer",
+  "fill_types": {
+   "0": "eCopperFastEthernet",
+   "1": "eCopperFastEthernet",
+   "2": "eCopperFastEthernet",
+   "3": "eCopperFastEthernet"
+  },
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "MultiLayerSwitch",
+  "port_names": [
+   "FastEthernet1/1",
+   "FastEthernet1/2",
+   "FastEthernet1/3",
+   "FastEthernet1/4",
+   "FastEthernet1/5",
+   "FastEthernet1/6",
+   "FastEthernet1/7",
+   "FastEthernet1/8",
+   "GigabitEthernet1/1",
+   "GigabitEthernet1/2"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-IE-2000",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet1/1",
+   "FastEthernet1/2",
+   "FastEthernet1/3",
+   "FastEthernet1/4",
+   "FastEthernet1/5",
+   "FastEthernet1/6",
+   "FastEthernet1/7",
+   "FastEthernet1/8",
+   "GigabitEthernet1/1",
+   "GigabitEthernet1/2"
+  ]
+ },
+ "ISR4321": {
+  "accepts": [
+   "NIM-2T",
+   "NIM-Cover",
+   "NIM-ES2-4",
+   "GLC-GE-100FX",
+   "GLC-LH-SMD"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2,
+   "eSfpModule": 1
+  },
+  "template": "model-ISR4321",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0/0/0",
+   "GigabitEthernet0/0/1"
+  ]
+ },
+ "ISR4331": {
+  "accepts": [
+   "NIM-2T",
+   "NIM-Cover",
+   "NIM-ES2-4",
+   "GLC-GE-100FX",
+   "GLC-LH-SMD",
+   "GLC-T",
+   "GLC-TE"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2,
+   "eSfpModule": 2
+  },
+  "template": "model-ISR4331",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0/0/0",
+   "GigabitEthernet0/0/1",
+   "GigabitEthernet0/0/2"
+  ]
+ },
+ "LAP-PT": {
+  "accepts": [
+   "ACCESS_POINT_POWER_ADAPTER"
+  ],
+  "family": "lightweightaccesspoint",
+  "fitted": [
+   "ACCESS_POINT_POWER_ADAPTER"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "LightWeightAccessPoint",
+  "port_names": [
+   "GigabitEthernet0",
+   "Dot11Radio0"
+  ],
+  "powered": true,
+  "slots": {
+   "eAccessPointPowerAdaptor": 1
+  },
+  "template": "model-LAP-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "GigabitEthernet0"
+  ]
+ },
+ "Laptop-PT": {
+  "accepts": [
+   "WPC300N",
+   "PT-LAPTOP-NM-1AM",
+   "PT-LAPTOP-NM-1CE",
+   "PT-LAPTOP-NM-1CFE",
+   "PT-LAPTOP-NM-1CGE",
+   "PT-LAPTOP-NM-1FFE",
+   "PT-LAPTOP-NM-1FGE",
+   "PT-LAPTOP-NM-1W",
+   "PT-LAPTOP-NM-1W-A",
+   "PT-LAPTOP-NM-1W-AC",
+   "PT-LAPTOP-NM-3G/4G",
+   "PT-HEADPHONE",
+   "PT-MICROPHONE"
+  ],
+  "family": "laptop",
+  "fitted": [
+   "PT-LAPTOP-NM-1CFE"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "Laptop",
+  "port_names": [
+   "FastEthernet0",
+   "Bluetooth"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtLaptopModule": 1,
+   "eTrs35": 2
+  },
+  "template": "model-Laptop-PT",
+  "verified": "pt-menu",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0"
+  ]
+ },
+ "Linksys-WRT300N": {
+  "accepts": [],
+  "family": "wirelessrouter",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "WirelessRouter",
+  "port_names": [
+   "Internet",
+   "Ethernet 1",
+   "Ethernet 2",
+   "Ethernet 3",
+   "Ethernet 4",
+   "Wireless"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-Linksys-WRT300N",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "Internet",
+   "Ethernet 1",
+   "Ethernet 2",
+   "Ethernet 3",
+   "Ethernet 4"
+  ]
+ },
+ "Meraki-MX65W": {
+  "accepts": [
+   "MERAKI-POWER-ADAPTER"
+  ],
+  "family": "securityappliance",
+  "fill_types": {
+   "10": "eCopperEthernet",
+   "11": "eCopperEthernet"
+  },
+  "fitted": [
+   "MERAKI-POWER-ADAPTER"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "SecurityAppliance",
+  "port_names": [
+   "Internet 1",
+   "Internet 2",
+   "GigabitEthernet 3",
+   "GigabitEthernet 4",
+   "GigabitEthernet 5",
+   "GigabitEthernet 6",
+   "GigabitEthernet 7",
+   "GigabitEthernet 8",
+   "GigabitEthernet 9",
+   "GigabitEthernet 10",
+   "Ethernet 11",
+   "Ethernet 12",
+   null
+  ],
+  "powered": true,
+  "slots": {
+   "eMerakiPowerAdaptor": 1
+  },
+  "template": "model-Meraki-MX65W",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "Internet 1",
+   "Internet 2",
+   "GigabitEthernet 3",
+   "GigabitEthernet 4",
+   "GigabitEthernet 5",
+   "GigabitEthernet 6",
+   "GigabitEthernet 7",
+   "GigabitEthernet 8",
+   "GigabitEthernet 9",
+   "GigabitEthernet 10",
+   "Ethernet 11",
+   "Ethernet 12"
+  ]
+ },
+ "Meraki-Server": {
+  "accepts": [
+   "WMP300N",
+   "PT-HOST-NM-1CE",
+   "PT-HOST-NM-1CFE",
+   "PT-HOST-NM-1CGE",
+   "PT-HOST-NM-1FFE",
+   "PT-HOST-NM-1FGE",
+   "PT-HOST-NM-1W",
+   "PT-HOST-NM-1W-A",
+   "PT-HOST-NM-1W-AC",
+   "PT-HOST-NM-3G/4G",
+   "PT-HOST-NM-COVER"
+  ],
+  "family": "server",
+  "fitted": [
+   "PT-HOST-NM-1CFE"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "MerakiServer",
+  "port_names": [
+   "FastEthernet0"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtHostModule": 2
+  },
+  "template": "model-Meraki-Server",
+  "verified": "pt-menu",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0"
+  ]
+ },
+ "NetworkController": {
+  "accepts": [],
+  "family": "networkcontroller",
+  "fitted": [],
+  "gateway": true,
+  "ios": false,
+  "kind": "NetworkController",
+  "port_names": [
+   "GigabitEthernet0",
+   "GigabitEthernet1"
+  ],
+  "powered": true,
+  "slots": {
+   "eInterfaceCard": 2
+  },
+  "template": "model-NetworkController",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "GigabitEthernet0",
+   "GigabitEthernet1"
+  ]
+ },
+ "PC-PT": {
+  "accepts": [
+   "WMP300N",
+   "PT-HOST-NM-1AM",
+   "PT-HOST-NM-1CE",
+   "PT-HOST-NM-1CFE",
+   "PT-HOST-NM-1CGE",
+   "PT-HOST-NM-1FFE",
+   "PT-HOST-NM-1FGE",
+   "PT-HOST-NM-1W",
+   "PT-HOST-NM-1W-A",
+   "PT-HOST-NM-1W-AC",
+   "PT-HOST-NM-3G/4G",
+   "PT-HOST-NM-COVER",
+   "PT-HEADPHONE",
+   "PT-MICROPHONE"
+  ],
+  "family": "pc",
+  "fitted": [
+   "PT-HOST-NM-1CFE"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "Pc",
+  "port_names": [
+   "FastEthernet0",
+   "Bluetooth"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtHostModule": 1,
+   "eTrs35": 2
+  },
+  "template": "model-PC-PT",
+  "verified": "pt-menu",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0"
+  ]
+ },
+ "Printer-PT": {
+  "accepts": [
+   "WMP300N",
+   "PT-HOST-NM-1CE",
+   "PT-HOST-NM-1CFE",
+   "PT-HOST-NM-1CGE",
+   "PT-HOST-NM-1FFE",
+   "PT-HOST-NM-1FGE",
+   "PT-HOST-NM-1W",
+   "PT-HOST-NM-1W-A",
+   "PT-HOST-NM-1W-AC",
+   "PT-HOST-NM-3G/4G",
+   "PT-HOST-NM-COVER"
+  ],
+  "family": "printer",
+  "fitted": [
+   "PT-HOST-NM-1CFE"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "Printer",
+  "port_names": [
+   "FastEthernet0"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtHostModule": 1
+  },
+  "template": "model-Printer-PT",
+  "verified": "pt-menu",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0"
+  ]
+ },
+ "Repeater-PT": {
+  "accepts": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CGE",
+   "PT-REPEATER-NM-1FFE",
+   "PT-REPEATER-NM-1FGE",
+   "PT-REPEATER-NM-COVER"
+  ],
+  "family": "repeater",
+  "fitted": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "Repeater",
+  "port_names": [
+   "Ethernet0",
+   "Ethernet1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtRepeaterModule": 2
+  },
+  "template": "model-Repeater-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Ethernet0",
+   "Ethernet1"
+  ]
+ },
+ "Router-PT": {
+  "accepts": [
+   "PT-ROUTER-NM-1AM",
+   "PT-ROUTER-NM-1CE",
+   "PT-ROUTER-NM-1CFE",
+   "PT-ROUTER-NM-1CGE",
+   "PT-ROUTER-NM-1FFE",
+   "PT-ROUTER-NM-1FGE",
+   "PT-ROUTER-NM-1S",
+   "PT-ROUTER-NM-1SS",
+   "PT-ROUTER-NM-COVER"
+  ],
+  "family": "router",
+  "fitted": [
+   "PT-ROUTER-NM-1CFE",
+   "PT-ROUTER-NM-1CFE",
+   "PT-ROUTER-NM-1FFE",
+   "PT-ROUTER-NM-1FFE",
+   "PT-ROUTER-NM-1S",
+   "PT-ROUTER-NM-1S"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "powered": true,
+  "slots": {
+   "ePtRouterModule": 10
+  },
+  "template": "model-Router-PT",
+  "verified": "ios-config",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0/0",
+   "FastEthernet1/0",
+   "FastEthernet4/0",
+   "FastEthernet5/0",
+   "Serial2/0",
+   "Serial3/0"
+  ]
+ },
+ "Router-PT-Empty": {
+  "accepts": [
+   "PT-ROUTER-NM-1AM",
+   "PT-ROUTER-NM-1CE",
+   "PT-ROUTER-NM-1CFE",
+   "PT-ROUTER-NM-1CGE",
+   "PT-ROUTER-NM-1FFE",
+   "PT-ROUTER-NM-1FGE",
+   "PT-ROUTER-NM-1S",
+   "PT-ROUTER-NM-1SS",
+   "PT-ROUTER-NM-COVER"
+  ],
+  "family": "router",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Router",
+  "port_names": [],
+  "powered": true,
+  "slots": {
+   "ePtRouterModule": 10
+  },
+  "template": "model-Router-PT-Empty",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": []
+ },
+ "SMARTPHONE-PT": {
+  "accepts": [],
+  "family": "pda",
+  "fitted": [
+   "Linksys-WPC300N",
+   "PT-PDA-NM-3G/4G"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "Pda",
+  "port_names": [
+   "Wireless0",
+   "3G/4G Cell1",
+   "Bluetooth"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtPdaModule": 2
+  },
+  "template": "model-SMARTPHONE-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": []
+ },
+ "Server-PT": {
+  "accepts": [
+   "WMP300N",
+   "PT-HOST-NM-1CE",
+   "PT-HOST-NM-1CFE",
+   "PT-HOST-NM-1CGE",
+   "PT-HOST-NM-1FFE",
+   "PT-HOST-NM-1FGE",
+   "PT-HOST-NM-1W",
+   "PT-HOST-NM-1W-A",
+   "PT-HOST-NM-1W-AC",
+   "PT-HOST-NM-3G/4G",
+   "PT-HOST-NM-COVER"
+  ],
+  "family": "server",
+  "fitted": [
+   "PT-HOST-NM-1CFE"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "Server",
+  "port_names": [
+   "FastEthernet0"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtHostModule": 2
+  },
+  "template": "model-Server-PT",
+  "verified": "pt-menu",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0"
+  ]
+ },
+ "Sniffer": {
+  "accepts": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CFE",
+   "PT-REPEATER-NM-1CGE",
+   "PT-REPEATER-NM-1FFE",
+   "PT-REPEATER-NM-1FGE",
+   "PT-REPEATER-NM-COVER"
+  ],
+  "family": "sniffer",
+  "fitted": [
+   "PT-REPEATER-NM-1CE",
+   "PT-REPEATER-NM-1CE"
+  ],
+  "gateway": false,
+  "ios": false,
+  "kind": "Sniffer",
+  "port_names": [
+   "Ethernet0",
+   "Ethernet1"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtRepeaterModule": 2
+  },
+  "template": "model-Sniffer",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Ethernet0",
+   "Ethernet1"
+  ]
+ },
+ "Switch-PT": {
+  "accepts": [
+   "PT-SWITCH-NM-1CE",
+   "PT-SWITCH-NM-1CFE",
+   "PT-SWITCH-NM-1CGE",
+   "PT-SWITCH-NM-1FFE",
+   "PT-SWITCH-NM-1FGE",
+   "PT-SWITCH-NM-COVER"
+  ],
+  "family": "switch",
+  "fitted": [
+   "PT-SWITCH-NM-1CFE",
+   "PT-SWITCH-NM-1CFE",
+   "PT-SWITCH-NM-1CFE",
+   "PT-SWITCH-NM-1CFE",
+   "PT-SWITCH-NM-1FFE",
+   "PT-SWITCH-NM-1FFE"
+  ],
+  "gateway": false,
+  "ios": true,
+  "kind": "Switch",
+  "powered": true,
+  "slots": {
+   "ePtSwitchModule": 10
+  },
+  "template": "model-Switch-PT",
+  "verified": "ios-config",
+  "vlan_database": true,
+  "wired": [
+   "FastEthernet0/1",
+   "FastEthernet1/1",
+   "FastEthernet2/1",
+   "FastEthernet3/1",
+   "FastEthernet4/1",
+   "FastEthernet5/1"
+  ]
+ },
+ "Switch-PT-Empty": {
+  "accepts": [
+   "PT-SWITCH-NM-1CE",
+   "PT-SWITCH-NM-1CFE",
+   "PT-SWITCH-NM-1CGE",
+   "PT-SWITCH-NM-1FFE",
+   "PT-SWITCH-NM-1FGE",
+   "PT-SWITCH-NM-COVER"
+  ],
+  "family": "switch",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "Switch",
+  "port_names": [],
+  "powered": true,
+  "slots": {
+   "ePtSwitchModule": 10
+  },
+  "template": "model-Switch-PT-Empty",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": []
+ },
+ "TV-PT": {
+  "accepts": [],
+  "family": "tv",
+  "fitted": [],
+  "gateway": false,
+  "ios": false,
+  "kind": "TV",
+  "port_names": [
+   "Port 0"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtTVModule": 1
+  },
+  "template": "model-TV-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": [
+   "Port 0"
+  ]
+ },
+ "TabletPC-PT": {
+  "accepts": [],
+  "family": "tabletpc",
+  "fitted": [
+   "Linksys-WPC300N",
+   "PT-TABLETPC-NM-3G"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "TabletPC",
+  "port_names": [
+   "Wireless0",
+   "3G/4G Cell1",
+   "Bluetooth"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtTabletPCModule": 2
+  },
+  "template": "model-TabletPC-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": []
+ },
+ "WLC-2504": {
+  "accepts": [],
+  "family": "wirelesslancontroller",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "WirelessLanController",
+  "port_names": [
+   "GigabitEthernet1",
+   "GigabitEthernet2",
+   "GigabitEthernet3",
+   "GigabitEthernet4",
+   null,
+   "management",
+   null
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-WLC-2504",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet1",
+   "GigabitEthernet2",
+   "GigabitEthernet3",
+   "GigabitEthernet4"
+  ]
+ },
+ "WLC-3504": {
+  "accepts": [],
+  "family": "wirelesslancontroller",
+  "fill_types": {
+   "2": "eCopperGigabitEthernet",
+   "3": "eCopperGigabitEthernet"
+  },
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "WirelessLanController",
+  "port_names": [
+   "GigabitEthernet1",
+   "GigabitEthernet2",
+   "GigabitEthernet3",
+   "GigabitEthernet4",
+   "GigabitEthernet5",
+   null,
+   "management",
+   null
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-WLC-3504",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet1",
+   "GigabitEthernet2",
+   "GigabitEthernet3",
+   "GigabitEthernet4",
+   "GigabitEthernet5"
+  ]
+ },
+ "WLC-PT": {
+  "accepts": [],
+  "family": "wirelesslancontroller",
+  "fitted": [],
+  "gateway": false,
+  "ios": true,
+  "kind": "WirelessLanController",
+  "port_names": [
+   "GigabitEthernet0",
+   "Management"
+  ],
+  "powered": true,
+  "slots": {},
+  "template": "model-WLC-PT",
+  "verified": "pt-hover",
+  "vlan_database": true,
+  "wired": [
+   "GigabitEthernet0"
+  ]
+ },
+ "WiredEndDevice-PT": {
+  "accepts": [],
+  "family": "end-device",
+  "fitted": [
+   "PT-WIREDENDDEVICE-NM-1CFE"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "WiredEndDevice",
+  "port_names": [
+   "FastEthernet0"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtWiredEndDeviceModule": 1
+  },
+  "template": "model-WiredEndDevice-PT",
+  "verified": "pt-menu",
+  "vlan_database": false,
+  "wired": [
+   "FastEthernet0"
+  ]
+ },
+ "WirelessEndDevice-PT": {
+  "accepts": [],
+  "family": "wirelessenddevice",
+  "fitted": [
+   "PT-WIRELESSENDDEVICE-NM-1W"
+  ],
+  "gateway": true,
+  "ios": false,
+  "kind": "WirelessEndDevice",
+  "port_names": [
+   "Wireless0"
+  ],
+  "powered": true,
+  "slots": {
+   "ePtWirelessEndDeviceModule": 1
+  },
+  "template": "model-WirelessEndDevice-PT",
+  "verified": "pt-hover",
+  "vlan_database": false,
+  "wired": []
+ }
+}
