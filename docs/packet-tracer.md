@@ -101,8 +101,17 @@ Found the hard way while testing the examples:
   `port.module` says which card a port sits on.
 - **Some IOS is refused silently on load.** `default-information originate`
   with `metric` or `metric-type` is rejected, so no default is sent; the rest
-  of the config still runs. `refused()`, the audit and a `PktWarning` from `config()` flag
-  known cases.
+  of the config still runs. Under `ipv6 router ospf`, `default-information
+  originate always` goes too, and under `ipv6 router eigrp`, a `redistribute`
+  with `include-connected`. On a 2960, `no switchport` and `ip address` on a
+  port are both dropped (its address goes on `interface Vlan1`). `refused()`,
+  the audit and a `PktWarning` from `config()` flag known cases.
+- **Some things vanish on load.** A second VLAN with a name already in use is
+  dropped whole (so is every VLAN after the first in a range given one
+  `name`), a cable between two ports of one device is gone, and a 7960
+  phone's config is thrown away (it has no CLI). pktlib raises for each, and
+  for an address on a laptop's Bluetooth port, which has no IP settings in
+  Packet Tracer. VLAN names have no length limit (200 characters kept).
 - **The 3650 ships with no power supply** and never boots; pktlib's template
   has an AC-POWER-SUPPLY fitted. Likewise the 3702i and LAP-PT access points
   ship without their power adapter (the port never comes up); theirs have
@@ -161,6 +170,11 @@ student one item at a time:
 4. Qt `qCompress`: a 4-byte big-endian length, then zlib, giving the XML
 
 Worked out by the [pka2xml](https://github.com/mircodz/pka2xml) project.
+Packet Tracer 8.2.0 compresses at zlib level 9 (the stream starts `78 DA`),
+and Python's zlib at level 9 gives its bytes back exactly, so `decode()` then
+`encode()` of a file Packet Tracer saved is byte for byte the same. A loaded
+network is saved at the level its file used. (zlib-ng, in Python 3.14 for
+Windows, compresses differently but as validly.)
 pktlib re-implements it in Python and checks Twofish against the paper's test
 vectors.
 

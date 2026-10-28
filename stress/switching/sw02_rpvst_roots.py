@@ -2,7 +2,10 @@
 
 Two 3560 distribution switches (DIST1, DIST2) and six 2960 access switches, every
 access switch trunked to both, so each VLAN has a loop to break.
-  VLANs     100-111 (created with one `vlan 100-111` range) and 200-211 (a comma list)
+  VLANs     100-111 (created with one `vlan 100-111` range) and 200-211 (a comma list),
+            left with their default names: one name for a whole range would
+            name every VLAN in it the same, and Packet Tracer drops a VLAN
+            whose name is taken
   roots     DIST1: `spanning-tree vlan 100-111 root primary`, `200-211 root secondary`
             DIST2: the reverse, written as priority numbers (4096 and 28672)
   trunks    native VLAN 999 everywhere, allowed lists pruned per access switch
@@ -19,7 +22,7 @@ Check in Packet Tracer:
   ACC4#  show spanning-tree vlan 200    -> Gi0/1 (to DIST1) Altn BLK
   ACC1#  show interfaces trunk          -> native 999, allowed 100-111,999
   PC-A1-1 ping PC-A3-1 (same VLAN 100, different access switches) -> success
-  DIST1# show vlan brief                -> 100-111 and 200-211 named, plus 999
+  DIST1# show vlan brief                -> VLAN0100-VLAN0111, VLAN0200-VLAN0211, NATIVE (999)
 """
 
 from pathlib import Path
@@ -41,9 +44,7 @@ for i, d in enumerate(dists):
     d.config(f"""
 spanning-tree mode rapid-pvst
 vlan 100-111
- name LOW
 vlan {",".join(map(str, HIGH))}
- name HIGH
 vlan {NATIVE}
  name NATIVE
 """)
@@ -67,9 +68,9 @@ for d in dists:
     if missing:
         problems.append(f"{d.name} VLAN database is missing {missing}")
     names = {d.vlans.get(100), d.vlans.get(205)}
-    if names != {"LOW", "HIGH"}:
+    if names != {"VLAN0100", "VLAN0205"}:
         problems.append(
-            f"{d.name} VLAN names after range/list `name`: 100={d.vlans.get(100)!r} 205={d.vlans.get(205)!r}"
+            f"{d.name} VLAN names after a range and a list: 100={d.vlans.get(100)!r} 205={d.vlans.get(205)!r}"
         )
 
 for a in range(6):

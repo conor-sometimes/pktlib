@@ -3,16 +3,17 @@
 Stresses: `ipv6 unicast-routing` plus `ipv6 address` (global and a manual
 link-local) on every routed interface; OSPFv2 + OSPFv3 in one domain and
 EIGRP + EIGRP for IPv6 (`ipv6 router eigrp 200`, `no shutdown` inside it) in
-the other, with V6-B redistributing both families both ways; an OSPFv3
-default (`default-information originate always`); a GRE tunnel between V6-C
+the other, with V6-B redistributing both families both ways; a GRE tunnel between V6-C
 and V6-E carrying IPv4 and IPv6 static routes to loopbacks nothing else
 advertises; PCs given IPv6 addresses (pktlib has no call for it: see
-FINDINGS printed by the script).
+FINDINGS printed by the script). Packet Tracer 8.2 dropped two lines this
+used to write (checks 18 and 19, 26 Oct 2026), so they're gone and refused()
+flags them: `default-information originate always` under `ipv6 router ospf`,
+and `include-connected` on V6-B's IPv6 EIGRP redistribution.
 Hardware: 2911, ISR4331 + NIM-2T, 1841+WIC-2T, 2811 + WIC-2T, 1941 + HWIC-2T.
 
 Check in Packet Tracer:
   - V6-B `show ipv6 route`: O, D and (on the far side) OE2 / EX routes
-  - V6-D `show ipv6 route`: `EX ::/0` (the OSPFv3 default via V6-B)
   - V6-A `show ipv6 ospf neighbor`, V6-E `show ipv6 eigrp neighbors`
   - V6-C `show interface tunnel0`: up/up; `ping 192.168.55.1 source 192.168.33.1`
     and `ping 2001:db8:55::1 source 2001:db8:33::1` (both only via the tunnel)
@@ -101,14 +102,11 @@ for r in (a, b, c):
 for r in (b, d, e):
     r.config(f"ipv6 router eigrp 200\n eigrp router-id {RID[r]}\n no shutdown")
 
-# V6-A: an IPv6 "internet" loopback and a default into OSPFv3
+# V6-A: an IPv6 "internet" loopback
 a.config("""
 interface loopback 0
  ipv6 address 2001:db8:ffff::1/128
  ipv6 ospf 1 area 0
-ipv6 route ::/0 Null0
-ipv6 router ospf 1
- default-information originate always
 """)
 
 # V6-B: both families, both ways
@@ -120,7 +118,7 @@ router eigrp 200
 ipv6 router ospf 1
  redistribute eigrp 200
 ipv6 router eigrp 200
- redistribute ospf 1 metric 1544 20000 255 1 1500 include-connected
+ redistribute ospf 1 metric 1544 20000 255 1 1500
 """)
 
 # GRE between V6-C and V6-E, carrying routes nothing else knows

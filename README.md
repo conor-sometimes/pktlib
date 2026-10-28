@@ -70,8 +70,8 @@ lists what and how we know.
 
 | Command | What it does |
 |---|---|
-| `pktlib info lab.pkt` | devices, links and addresses |
-| `pktlib audit lab.pkt` | problems you can see without running the simulation; exit code 1 if any |
+| `pktlib info lab.pkt` | devices, links and addresses (a `.pka`: its items and tests too) |
+| `pktlib audit lab.pkt` | problems you can see without running the simulation; exit code 1 if any (a `.pka`: its answer network) |
 | `pktlib dump lab.pkt [out.py]` | a Python script that rebuilds the file |
 | `pktlib decode lab.pkt [out.xml]` / `encode in.xml out.pkt` | the raw XML |
 

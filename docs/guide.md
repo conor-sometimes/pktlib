@@ -142,11 +142,13 @@ for problem in pktlib.audit(net):
 `.devices`. It covers duplicate MAC, IPv4 and IPv6 link-local addresses; PC gateways nobody
 owns or outside the subnet; cabled router ports left shut; the two ends of a link in
 different subnets; serial DCE ends with no clock rate; routers with several networks and no
-routing; shared OSPF router-ids; and config Packet Tracer drops on load. It reads the file
+routing; shared OSPF router-ids; router ports given their subnet's network or broadcast
+address, or a subnet overlapping another port's; and config Packet Tracer drops on load. It reads the file
 only, so still test in Packet Tracer.
 
 Also: `net.duplicate_macs()`, `net.duplicate_link_locals()`,
-`pktlib.refused(lines)` (config Packet Tracer drops on load), and
+`pktlib.refused(lines, model=None)` (config Packet Tracer drops on load; give the model,
+such as `"2960-24TT"`, for its own rules), and
 `pktlib.password_matches(stored, password)` for a `password 7 ...` or `secret 5 ...` line.
 
 ## Labs

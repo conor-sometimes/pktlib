@@ -11,6 +11,17 @@
   `diff_items()` (so `Lab.build(pka=True)`) picks them, keeping config lines for what the
   wizard can't grade (static routes, PAT's `overload`).
 - `net.note(text, html=True)` writes markup on purpose; `Note.html` is the stored text.
+- `pktlib info` and `pktlib audit` read a `.pka`: info lists its items, tests and answer
+  network; audit checks the answer network.
+- A loaded file is saved at the zlib level it was compressed at (Packet Tracer's is 9), and
+  `pktlib.decode()` then `encode()` gives a file Packet Tracer saved back byte for byte.
+- pktlib refuses what Packet Tracer 8.2 drops without a word (seen in round 1 of the checks):
+  a VLAN name already in use (one `name` for a VLAN range counts), a cable between two
+  ports of one device, `config()` on a 7960 phone, and `set_ip()` on a Bluetooth port
+  raise `PktError`; `no switchport` or `ip address` on a 2960's port, `default-information
+  originate always` under `ipv6 router ospf` and `include-connected` under `ipv6 router
+  eigrp` give a `PktWarning`, and `audit()` flags them. `refused(lines, model)` takes the
+  device model for the 2960 rule.
 
 ### Fixed
 
@@ -19,6 +30,8 @@
 - A loaded activity's `initial` reads the start network where the wizard left the value
   out (an ACL or pool the start hasn't got).
 - `scripts/make_templates.py` no longer deletes the activity template.
+- Two stress networks wrote what Packet Tracer drops: sw02 named every VLAN of a range the
+  same, and rt05 kept the two IPv6 routing lines above.
 - Static routes in `make_activity()` are refused with the reason (the wizard can't grade
   them), not as an unknown item.
 

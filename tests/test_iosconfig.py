@@ -387,3 +387,20 @@ def test_port_channels_go_in_number_order():
     assert out.index("interface Port-channel2") < next(
         i for i, line in enumerate(out) if line.startswith("interface FastEthernet")
     )
+
+
+def test_refused_ipv6_routing_lines_only_in_their_block():
+    """Checks 18 and 19 (26 Oct 2026): both lines were gone from Packet
+    Tracer's re-save, merged block or not, and V6-B had no ::/0."""
+    ospf6 = ["ipv6 router ospf 1", " default-information originate always"]
+    eigrp6 = ["ipv6 router eigrp 200", " redistribute ospf 1 metric 1544 20000 255 1 1500 include-connected"]
+    assert [l for l, _ in refused(ospf6 + eigrp6)] == [ospf6[1], eigrp6[1]]
+    assert refused(["router ospf 1", " default-information originate always"]) == []
+
+
+def test_refused_2960_port_lines_need_the_model():
+    lines = ["interface FastEthernet0/1", " no switchport", " ip address 10.0.0.1 255.255.255.0"]
+    assert refused(lines) == []
+    assert refused(lines, "3560-24PS") == []  # a multilayer switch has routed ports
+    assert [l for l, _ in refused(lines, "2960-24TT")] == lines[1:]
+    assert refused(["interface Vlan1", " ip address 10.0.0.1 255.255.255.0"], "2960-24TT") == []

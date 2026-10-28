@@ -3,7 +3,9 @@
 pktlib decode  in.pkt  [out.xml]     .pkt -> Packet Tracer XML
 pktlib encode  in.xml  out.pkt       XML -> .pkt
 pktlib info    in.pkt                devices, ports in use, links, addresses
+                                     (a .pka: its items and tests, then the answer network)
 pktlib audit   in.pkt                what's wrong that can be seen in the file (exit 1 if anything)
+                                     (a .pka: its answer network)
 pktlib dump    in.pkt  [out.py]      .pkt -> a Python script that rebuilds it
 """
 
@@ -18,6 +20,7 @@ from ._codec import decode, encode
 from ._errors import PktError
 from ._export import to_python
 from ._model import Network, load
+from .activity import Activity, activity_from_xml
 
 
 def _out(path: str | None, data: bytes | str) -> None:
@@ -29,10 +32,38 @@ def _out(path: str | None, data: bytes | str) -> None:
         Path(path).write_bytes(data)
 
 
+def _open(path: str, *, strict: bool = True) -> Network | Activity:
+    """A .pkt's network, or a .pka's activity (told apart by the XML, not the name)."""
+    xml = decode(Path(path).read_bytes())
+    if xml.lstrip().startswith(b"<PACKETTRACER5_ACTIVITY"):
+        return activity_from_xml(xml)
+    return Network.from_xml(xml, strict=strict)
+
+
+def _edition(net: Network) -> str:
+    return f"edition {net.edition}" if net.edition else "an edition pktlib doesn't know"
+
+
 def _info(path: str) -> str:
-    net = load(path, strict=False)  # reading only: say what it is, whatever version
-    edition = f"edition {net.edition}" if net.edition else "an edition pktlib doesn't know"
-    lines = [f"Packet Tracer {net.version} ({edition})", ""]
+    found = _open(path, strict=False)  # reading only: say what it is, whatever version
+    if isinstance(found, Network):
+        return f"Packet Tracer {found.version} ({_edition(found)})\n\n" + _network_info(found)
+    act = found
+    lines = [
+        f"Packet Tracer activity {act.answer.version} ({_edition(act.answer)})",
+        f"{len(act.items)} item(s), {len(act.tests)} connectivity test(s), {len(act.instructions)} instruction page(s)",
+        "",
+        "Items (start -> answer, points):",
+    ]
+    lines += [f"  {' > '.join(i.path)}: {i.initial!r} -> {i.expected!r}, {i.points}" for i in act.items]
+    if act.tests:
+        lines += ["", "Connectivity tests:"]
+        lines += [f"  {t.source} -> {t.destination} ({'succeeds' if t.succeed else 'fails'})" for t in act.tests]
+    return "\n".join(lines) + "\n\nAnswer network:\n" + _network_info(act.answer)
+
+
+def _network_info(net: Network) -> str:
+    lines: list[str] = []
     for d in net.devices:
         x, y = d.xy
         lines.append(f"{d.name}  {d.kind} {d.model}  at {x:g},{y:g}")
@@ -56,7 +87,8 @@ def _audit_files(paths: list[str]) -> int:
     bad = 0
     for path in paths:
         try:
-            found = audit(load(path))
+            opened = _open(path)
+            found = audit(opened.answer if isinstance(opened, Activity) else opened)
         except PktError as e:
             print(f"pktlib: {path}: {e}", file=sys.stderr)
             bad += 1
@@ -66,6 +98,8 @@ def _audit_files(paths: list[str]) -> int:
             bad += 1
             continue
         lines = "".join(f"  x {p}\n" for p in found)
+        if isinstance(opened, Activity):
+            path = f"{path} (its answer network)"
         _out(None, lines + (f"{len(found)} problem(s) in {path}\n" if found else f"{path}: nothing found\n"))
         bad += bool(found)
     if len(paths) > 1:

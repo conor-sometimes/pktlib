@@ -179,7 +179,7 @@
   "rt04_nat_acl_dhcp.pkt": "3b0ec915466d84ec0542f37515e6f2426f9441dc66292caa3a47ff9ce5d0f1fc"
  },
  "stress/routing/rt05_dual_stack_gre.py": {
-  "rt05_dual_stack_gre.pkt": "8c7858d999c8194efe812cb281c1ff62b35f5f594eca77654c2947e45782c5e1"
+  "rt05_dual_stack_gre.pkt": "521afc931f2361ef6577e560bd7b75357c1fc2dd0c7e6490c9c8493ba885823d"
  },
  "stress/routing/rt06_long_ring_chain.py": {
   "rt06_long_ring_chain.pkt": "80cc04533ef414e1e117024a9067f10e3ed5a221b160023150771b1c64ccce46"
@@ -191,7 +191,7 @@
   "sw01_many_channels.pkt": "bd72c68cb7bf73c8ebf31d0dec1216501515a9066dde5ebe8877e0bab18c8a07"
  },
  "stress/switching/sw02_rpvst_roots.py": {
-  "sw02_rpvst_roots.pkt": "5e74d02a96108a7689aacc8e366ea9965436d130e55eb69ea3c1417ad861572b"
+  "sw02_rpvst_roots.pkt": "7f23f4868d3048781cc255c69da96143b1d7d2d60356e02e41c26fd365d46001"
  },
  "stress/switching/sw03_hsrp_relay.py": {
   "sw03_hsrp_relay.pkt": "df0cdcde1342249350d2f8909b3dcbb1cd5ce280aadbdcda54f28a600a25d979"
