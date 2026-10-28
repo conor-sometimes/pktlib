@@ -53,3 +53,18 @@ def test_audit_several_files_in_process(tmp_path, capsys):
     assert "clean.pkt: nothing found" in out and "1 of 3 files clean" in out
     assert "damaged.pkt" in err and "missing.pkt" in err
     assert main(["audit", str(clean)]) == 0
+
+
+def test_info_and_audit_read_an_activity(capsys):
+    pka = str(ROUTED.parent / "rich2.pka")
+    assert main(["info", pka]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("Packet Tracer activity 8.2.0.0162 (edition 8.2)")
+    assert "  R1 > ACL > 20, 1\n" in out and "PC1 -> ISP (succeeds)" in out
+    assert "deny host" not in out and "Answer network" not in out  # the answers only on request
+    assert main(["info", "--answers", pka]) == 0
+    out = capsys.readouterr().out
+    assert "R1 > ACL > 20: '' -> 'deny host 9.9.9.9\\npermit any', 1" in out
+    assert "Answer network:\nR1  Router 2911" in out
+    assert main(["audit", pka]) == 0
+    assert "rich2.pka (its answer network): nothing found" in capsys.readouterr().out

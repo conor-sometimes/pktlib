@@ -1,4 +1,4 @@
-# pktlib: what's open (26 Oct 2026)
+# pktlib: what's open (28 Oct 2026)
 
 ```
 uv run pytest                  # everything; must pass before a commit
@@ -13,27 +13,18 @@ just examples                  # rebuild and audit the examples into out/
   FE80::202:BAFF:FE64:6A24, not the template's FE80::290:CFF:FEC7:8E5A. The fix for cloned
   link-locals hasn't been seen in the GUI yet.
 
-## Limits to check in Packet Tracer (from the error audit, 26 Oct)
+## Limits checked in Packet Tracer (round 1, 27 Oct)
 
-pktlib accepts all of these today. Each needs seeing in Packet Tracer 8.2 before pktlib
-refuses or warns about it:
+Done: pktlib refuses, warns or audits each silent drop (VLAN name in use, 2960 port
+address, a cable within one device, 7960 config, Bluetooth address, network or broadcast or
+overlapping router addresses). Accepted by Packet Tracer, so left alone: 200-character and
+spaced VLAN names, renaming VLAN 1, device names differing only in case, control
+characters, odd PC addresses (network, broadcast, /32, the gateway's own; the network one
+still pinged), a 1000-bit RSA key (SSH works). Coordinates clamp to about x 100-3900, y from 100. Still open:
 
-- VLAN names: longest accepted (pktlib takes 200 characters), spaces, control characters,
-  two VLANs with one name, renaming VLAN 1 or 1002.
-- Device names: 64 characters; names differing only in case (`R1` and `r1`).
-- PC addresses: the network or broadcast address, multicast, /0, /32, a gateway equal to the
-  PC's own address.
-- Router interfaces: a network address (`10.0.0.0/24`), overlapping subnets on two
-  interfaces, `ip address` on a 2960's layer 2 port.
-- A cable between two ports of the same switch.
-- RSA modulus that isn't a power of 2 (1000).
-- A Simple PDU from a 2960 with no SVI; an IPv6 destination.
-- `config()` on a 7960 phone: does Packet Tracer apply any of it?
-- What `exit`, `end` and `conf t` do when replayed from a file (pktlib now leaves them out).
-- DHCP and a static address on one port: which wins (pktlib now turns DHCP off on set_ip).
-- set_ip / use_dhcp on a laptop's Bluetooth port.
-- Negative or very large coordinates.
-- Control characters in config lines and the user profile.
+- Is it `include-connected` Packet Tracer drops under `ipv6 router eigrp`, or any
+  `redistribute ospf` there? stress/routing/rt05 now writes it without; check V6-B still has
+  D routes and the far side EX routes.
 
 ## Config: a block entered twice
 

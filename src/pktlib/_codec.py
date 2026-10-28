@@ -1,11 +1,17 @@
 """Turn .pkt / .pka bytes into Packet Tracer's XML and back.
 
-The layers (Packet Tracer 6 onwards, worked out by the pka2xml project):
+The layers (the container Packet Tracer 5.3.3 onwards uses, worked out by the
+pka2xml project):
 
 1. the whole file is byte-reversed and XORed with (L - i*L) & 0xFF, L = file length
 2. Twofish-EAX, key sixteen 0x89 bytes, nonce sixteen 0x10 bytes, 16-byte tag at the end
 3. the plaintext is XORed with (n - i) & 0xFF, n = plaintext length
 4. what is left is Qt's qCompress: a 4-byte big-endian length, then a zlib stream
+
+Packet Tracer 8.2.0 compresses at level 9 (the stream starts 78 DA), and
+Python's zlib at level 9 gives the same bytes: re-encoding the XML of a file
+Packet Tracer saved gives that file back exactly. zlib-ng (Python 3.14 on
+Windows) compresses differently but just as validly.
 """
 
 from __future__ import annotations
@@ -39,11 +45,19 @@ def _xor_inner(data: bytes) -> bytes:
 
 def decode(data: bytes | bytearray, *, verify: bool = True) -> bytes:
     """Encrypted .pkt bytes -> XML bytes."""
+    return decode_with_level(data, verify=verify)[0]
+
+
+def decode_with_level(data: bytes | bytearray, *, verify: bool = True) -> tuple[bytes, int]:
+    """decode(), plus the zlib level the file was compressed at as far as the
+    stream's header says: 9 for 78 DA (Packet Tracer), 6 for 78 9C (zlib's
+    default), 5 or 1 for the faster settings. encode() at that level gives
+    the same header back."""
     if not isinstance(data, (bytes, bytearray)):
         raise TypeError("decode() wants bytes")
     plain = eax_decrypt(KEY, NONCE, _unscramble_outer(bytes(data)), verify=verify)
     packed = _xor_inner(plain)
-    if len(packed) < 4:
+    if len(packed) < 6:
         raise FileFormatError("too short to be a .pkt")
     size = int.from_bytes(packed[:4], "big")
     try:
@@ -52,7 +66,7 @@ def decode(data: bytes | bytearray, *, verify: bool = True) -> bytes:
         raise FileFormatError(f"not a .pkt (zlib: {e})") from None
     if len(xml) != size:
         raise FileFormatError(f"header says {size} bytes, zlib gave {len(xml)}")
-    return xml
+    return xml, (1, 5, 6, 9)[packed[5] >> 6]
 
 
 def encode(xml: bytes, level: int = 9) -> bytes:

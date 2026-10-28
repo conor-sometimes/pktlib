@@ -8,7 +8,8 @@ Duplicate addresses (MAC, IPv4, IPv6 link-local), config Packet Tracer 8.2 is
 known to refuse, PC gateways nobody owns, the two ends of a link in different
 subnets, cabled ports left shut down, serial DCE ends with no clock rate,
 routers with more than one network and no routing at all, shared OSPF
-router-ids, router ports given their subnet's network or broadcast address.
+router-ids, router ports given their subnet's network or broadcast address, or
+a subnet that overlaps another port's on the same router.
 A clean audit doesn't prove a ping works: still test in Packet Tracer.
 """
 
@@ -54,6 +55,7 @@ def audit(net: Network) -> list[Problem]:
         if lan:  # a home router's LAN address, set in its GUI (192.168.0.1 out of the box)
             gateways.add(lan)
         if d.has_ios:  # every interface in the config, sub-interfaces and SVIs included
+            earlier: list[tuple[str, ipaddress.IPv4Network]] = []
             for name, (addr, _up) in d.interfaces.items():
                 if addr:
                     try:
@@ -75,6 +77,19 @@ def audit(net: Network) -> list[Problem]:
                                 d.name,
                             )
                         )
+                    # Packet Tracer replays the config in order and drops an address
+                    # whose subnet overlaps an earlier port's (check 6, 27 Oct 2026:
+                    # 10.0.0.130/25 on g0/2 after 10.0.0.129/25 on g0/1)
+                    clash = next((n for n, other in earlier if other.overlaps(nw)), None)
+                    if clash is not None:
+                        problems.append(
+                            Problem(
+                                f"{d.name}.{name}: {iface} overlaps {clash}'s subnet; "
+                                "Packet Tracer drops it, so the port has no address",
+                                d.name,
+                            )
+                        )
+                    earlier.append((name, nw))
                     gateways.add(str(iface.ip))
                 for key, line in d.interface_config(name).items():
                     if key.startswith("standby ") and key.endswith(" ip"):
@@ -118,7 +133,7 @@ def audit(net: Network) -> list[Problem]:
         if len(names) > 1:
             problems.append(Problem(f"OSPF router-id {rid} is on more than one router: {', '.join(names)}", *names))
     for d in net.devices:
-        for line, why in refused(d.running_config) if d.has_ios else []:
+        for line, why in refused(d.running_config, d.model) if d.has_ios else []:
             problems.append(Problem(f"{d.name}: `{line.strip()}` {why}", d.name))
 
     for ip, where in owners.items():

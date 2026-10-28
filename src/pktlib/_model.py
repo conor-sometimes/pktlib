@@ -26,7 +26,7 @@ from types import MappingProxyType
 from typing import Any, Literal, NamedTuple, get_args
 
 from . import _editions as editions
-from ._codec import decode, encode
+from ._codec import decode_with_level, encode
 from ._errors import FileFormatError, NotFound, PktError, PktWarning
 from ._iosconfig import blocks, interface_state, interfaces, merge_config, refused
 from ._modules import SLOT_WORDS, Slot, fresh_module, module_models, port_names_for, slots
@@ -833,6 +833,9 @@ class Device:
                     f"config text starts indented ({first.strip()!r}) but a later line isn't: indent block bodies only"
                 )
             commands = lines
+        if self.kind == "IpPhone":
+            # check 11, 2026-10-26: a 7960's `hostname` was gone from Packet Tracer's re-save
+            raise PktError(f"{self.name} is a {self.model}: it has no CLI, and Packet Tracer drops config in the file")
         commands = _expand_interface_ranges(_prepare_commands(commands))
         if check_ports:
             self._check_interfaces(commands)
@@ -843,7 +846,7 @@ class Device:
         ):
             # switches, and routers with an EtherSwitch card
             commands, add, remove = self._plan_vlans(commands)
-        for line, why in refused(commands):
+        for line, why in refused(commands, self.model):
             warnings.warn(f"{self.name}: `{line.strip()}` {why}", PktWarning, stacklevel=3)
         merged = merge_config(self.running_config, commands)
         # everything is checked; now change the device
@@ -920,6 +923,11 @@ class Device:
                     add.append((v, None))
                     known.add(v)
             out.append(c)
+        names = {v: n for v, n in self.vlans.items() if v not in remove}
+        for v, name in add:
+            if name is not None:
+                _check_vlan_name(self, v, name, names)
+                names[v] = name
         return out, add, remove
 
     # VLAN database (switches)
@@ -941,6 +949,8 @@ class Device:
         el = self.engine.find("VLANS")
         if el is None:
             raise PktError(f"{self.name} ({self.kind}) has no VLAN database")
+        if name is not None:
+            _check_vlan_name(self, number, name, self.vlans)
         for v in el.findall("VLAN"):
             if req_int_attr(v, "number") == number:
                 if name is not None:
@@ -1169,6 +1179,9 @@ class Device:
         iface = _interface(address)
         gw = _gateway(gateway, iface)
         p = self._end_port(port)
+        if p.type == "eBluetooth":
+            # check 14, 2026-10-26: IP Configuration offers no Bluetooth, and Config > Bluetooth has no IP fields
+            raise PktError(f"{self.name}.{p.name}: Packet Tracer has no IP settings for Bluetooth")
         _set(p.el, "IP", str(iface.ip))
         _set(p.el, "SUBNET", str(iface.netmask))
         if p.el.find("PORT_GATEWAY") is not None:
@@ -1178,6 +1191,14 @@ class Device:
         g = self.engine.find("GATEWAY")
         if g is not None:
             g.text = gw
+
+
+def _check_vlan_name(dev: Device, number: int, name: str, names: Mapping[int, str]) -> None:
+    """Check 3, 2026-10-26: a second VLAN named like one already there was
+    gone from Packet Tracer's re-save (VLAN 60 'SAME' beside VLAN 50 'SAME')."""
+    for v, n in names.items():
+        if v != number and n == name:
+            raise PktError(f"{dev.name}: VLAN {v} is already named {name!r}, and Packet Tracer drops a second one")
 
 
 class Link:
@@ -1469,6 +1490,7 @@ class Network:
         self.root: ET.Element = root  # PACKETTRACER5: an escape hatch, not a stable API
         self._rng = random.Random(seed)
         self._strict = strict
+        self._level = 9  # zlib level to save at: Packet Tracer's, or what the loaded file used
         self._upgrade_refs()
         if strict:
             version = _text(root, "VERSION")
@@ -1507,7 +1529,10 @@ class Network:
     @classmethod
     def from_bytes(cls, data: bytes, *, seed: int | None = None, strict: bool = True) -> Network:
         """A network from .pkt bytes (see load() for a file)."""
-        return cls(parse_xml(decode(data)), seed=seed, strict=strict)
+        xml, level = decode_with_level(data)
+        net = cls(parse_xml(xml), seed=seed, strict=strict)
+        net._level = level
+        return net
 
     @classmethod
     def from_xml(cls, xml: bytes | str, *, seed: int | None = None, strict: bool = True) -> Network:
@@ -1543,8 +1568,9 @@ class Network:
         return ET.tostring(self.root)
 
     def to_bytes(self) -> bytes:
-        """The .pkt file's bytes: to_xml(), compressed and encrypted."""
-        return encode(self.to_xml())
+        """The .pkt file's bytes: to_xml(), compressed (at the level the loaded
+        file used, else Packet Tracer's 9) and encrypted."""
+        return encode(self.to_xml(), self._level)
 
     def save(self, path: str | os.PathLike[str]) -> None:
         """Write the .pkt file."""
@@ -2106,6 +2132,9 @@ class Network:
         pa, pb = da.port(a_port), db.port(b_port)
         if da.name == db.name and pa.name == pb.name:
             raise PktError("can't cable a port to itself")
+        if da.name == db.name:
+            # check 8, 2026-10-26: Packet Tracer dropped SW1 Fa0/1 to Fa0/2 on load
+            raise PktError(f"{da.name}: Packet Tracer drops a cable between two ports of one device")
         for p in (pa, pb):
             if self.link_at(p.device.name, p.name):
                 raise PktError(f"{p.device.name}.{p.name} already has a cable")
@@ -2167,12 +2196,15 @@ class Network:
 
 def load(path: str | os.PathLike[str], *, seed: int | None = None, strict: bool = True) -> Network:
     """Open a .pkt. strict=False reads one from a Packet Tracer pktlib doesn't know."""
-    root = parse_xml(decode(Path(path).read_bytes()))
+    xml, level = decode_with_level(Path(path).read_bytes())
+    root = parse_xml(xml)
     if root.tag == "PACKETTRACER5_ACTIVITY":
         raise FileFormatError(
             f"{path} is a Packet Tracer activity (.pka), not a network; read it with pktlib.activity.load_activity()"
         )
-    return Network(root, seed=seed, strict=strict)
+    net = Network(root, seed=seed, strict=strict)
+    net._level = level
+    return net
 
 
 def new(*, seed: int | None = None, edition: str = editions.LATEST) -> Network:

@@ -81,3 +81,19 @@ def test_network_and_broadcast_addresses_on_router_ports(net):
         "Packet Tracer drops it, so the port has no address",
     ]
     assert found[0].devices == ("R",)
+
+
+def test_overlapping_subnets_on_one_router_are_flagged(net):
+    """Check 6 (27 Oct 2026): 10.0.0.130/25 on g0/2 after 10.0.0.129/25 on g0/1
+    became `no ip address` in Packet Tracer's re-save."""
+    r = net.router("R1", "2911")
+    r.config(
+        "interface g0/1\n ip address 10.0.0.129 255.255.255.128\ninterface g0/2\n ip address 10.0.0.130 255.255.255.128"
+    )
+    found = [str(p) for p in pktlib.audit(net) if "overlaps" in str(p)]
+    assert found == [
+        "R1.GigabitEthernet0/2: 10.0.0.130/25 overlaps GigabitEthernet0/1's subnet; "
+        "Packet Tracer drops it, so the port has no address"
+    ]
+    r.config("interface g0/2\n ip address 10.0.1.1 255.255.255.0")
+    assert not [p for p in pktlib.audit(net) if "overlaps" in str(p)]

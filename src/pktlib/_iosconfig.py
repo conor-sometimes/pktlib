@@ -53,21 +53,62 @@ def blocks(lines: list[str]) -> list[tuple[str, list[str]]]:
 
 # Config Packet Tracer 8.2 is known not to take from a file, each seen in the
 # GUI. A refused line is dropped silently on load; the rest of the config runs.
-_REFUSED = [
+# Each rule: (models it applies to or None for any, the block it sits in or
+# None for anywhere, the line, why).
+_ANY_PORT = re.compile(r"^interface (?!vlan)", re.I)
+_REFUSED: list[tuple[frozenset[str] | None, re.Pattern[str] | None, re.Pattern[str], str]] = [
     (
+        None,
+        None,
         re.compile(r"^\s*default-information originate\b.*\b(metric|metric-type)\b"),
         "is refused by Packet Tracer 8.2 (only plain `default-information originate`), so no default is sent",
     ),
     (
+        None,
+        None,
         re.compile(r"^interface range ", re.I),
         "is ignored when Packet Tracer loads a file; write one block per interface",
+    ),
+    # check 18/19, 2026-10-26: gone from the re-save, and no ::/0 on the neighbour
+    (
+        None,
+        re.compile(r"^ipv6 router ospf ", re.I),
+        re.compile(r"^\s+default-information originate always\b", re.I),
+        "is dropped by Packet Tracer 8.2 under `ipv6 router ospf`, so no default is sent",
+    ),
+    # check 18/19: `redistribute ospf 1 metric 1544 20000 255 1 1500 include-connected`, gone
+    (
+        None,
+        re.compile(r"^ipv6 router eigrp ", re.I),
+        re.compile(r"^\s+redistribute .*\binclude-connected\b", re.I),
+        "is dropped by Packet Tracer 8.2 under `ipv6 router eigrp`",
+    ),
+    # check 7: both lines on a 2960's Fa0/1 were gone from the re-save
+    (
+        frozenset({"2960-24TT"}),
+        _ANY_PORT,
+        re.compile(r"^\s+(no switchport\s*$|ip address )", re.I),
+        "is dropped by Packet Tracer 8.2: a 2960's ports are switch ports only (address it on `interface Vlan1`)",
     ),
 ]
 
 
-def refused(lines: list[str]) -> list[tuple[str, str]]:
-    """Lines Packet Tracer 8.2 won't apply on load, with why: [(line, reason)]."""
-    return [(line, why) for line in lines for rx, why in _REFUSED if rx.search(line)]
+def refused(lines: list[str], model: str | None = None) -> list[tuple[str, str]]:
+    """Lines Packet Tracer 8.2 won't apply on load, with why: [(line, reason)].
+    `model` ('2960-24TT') adds the rules for that device."""
+    out: list[tuple[str, str]] = []
+    header = ""
+    for line in lines:
+        if not line.startswith(" "):
+            header = line.strip()
+        for models, block, rx, why in _REFUSED:
+            if models is not None and model not in models:
+                continue
+            if block is not None and not block.search(header):
+                continue
+            if rx.search(line):
+                out.append((line, why))
+    return out
 
 
 _MERGEABLE = (

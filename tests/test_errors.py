@@ -358,3 +358,55 @@ def test_audit_reports_a_pc_address_that_is_not_ipv4(net):
     pc = net.pc("PC1", ip="10.0.0.5/24")
     pc["fa0"].el.find("IP").text = "-1"
     assert any("PC1.FastEthernet0: -1/24 isn't an IPv4 address" in p for p in pktlib.audit(net))
+
+
+# Things Packet Tracer 8.2 drops without a word (round 1 checks, 26 Oct 2026):
+# pktlib refuses them, so a file never says something Packet Tracer won't do.
+
+
+def test_a_vlan_name_already_in_use_is_refused(net):
+    """Check 3: VLAN 60 'SAME' beside VLAN 50 'SAME' was gone from the re-save."""
+    sw = net.switch("S1", "2960-24TT")
+    sw.add_vlan(50, "SAME")
+    with pytest.raises(pktlib.PktError, match="already named 'SAME'"):
+        sw.add_vlan(60, "SAME")
+    with pytest.raises(pktlib.PktError, match="already named 'SAME'"):
+        sw.config("vlan 60\n name SAME")
+    with pytest.raises(pktlib.PktError, match="already named"):
+        sw.config("vlan 70-71\n name BOTH")  # one name for a range names every VLAN in it
+    assert 60 not in sw.vlans and 70 not in sw.vlans
+    sw.add_vlan(50, "SAME")  # renaming a VLAN to its own name is fine
+    sw.config("no vlan 50\nvlan 60\n name SAME")  # and so is reusing a name being freed
+    assert sw.vlans[60] == "SAME"
+
+
+def test_a_cable_between_two_ports_of_one_device_is_refused(net):
+    """Check 8: Packet Tracer dropped SW1 Fa0/1 to Fa0/2 on load."""
+    sw = net.switch("S1", "2960-24TT")
+    with pytest.raises(pktlib.PktError, match="two ports of one device"):
+        sw["fa0/1"].connect(sw["fa0/2"])
+    assert not net.links
+
+
+def test_config_on_a_7960_phone_is_refused(net):
+    """Check 11: the phone's `hostname` was gone from the re-save; it has no CLI."""
+    with pytest.raises(pktlib.PktError, match="no CLI"):
+        net.phone("PH1").config("hostname X")
+
+
+def test_an_address_on_bluetooth_is_refused(net):
+    """Check 14: IP Configuration lists no Bluetooth, and its Config page has no IP fields."""
+    lt = net.laptop("LT1")
+    with pytest.raises(pktlib.PktError, match="Bluetooth"):
+        lt.set_ip("10.0.0.5/24", port="Bluetooth")
+    lt.set_ip("10.0.0.5/24", port="FastEthernet0")
+
+
+def test_a_2960_port_address_warns(net):
+    """Check 7: `no switchport` and `ip address` on a 2960's Fa0/1 were both dropped."""
+    sw = net.switch("S1", "2960-24TT")
+    with pytest.warns(pktlib.PktWarning, match="switch ports only") as caught:
+        sw.config("interface fa0/1\n no switchport\n ip address 10.0.0.1 255.255.255.0")
+    assert len(caught) == 2
+    assert any("switch ports only" in str(p) for p in pktlib.audit(net))
+    sw.config("interface Vlan1\n ip address 10.0.0.2 255.255.255.0")  # the SVI is where it goes

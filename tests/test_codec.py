@@ -8,7 +8,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 import pktlib
-from pktlib._codec import _scramble_outer, _unscramble_outer, _xor_inner
+from pktlib._codec import _scramble_outer, _unscramble_outer, _xor_inner, decode_with_level
 from tests.conftest import SOURCES, examples
 
 
@@ -25,6 +25,30 @@ def test_every_source_file_decodes(name):
 
 def test_reencode_decodes_to_the_same_xml(routed_xml):
     assert pktlib.decode(pktlib.encode(routed_xml)) == routed_xml
+
+
+# Python 3.14 on Windows builds zlib with zlib-ng, which compresses differently.
+_ZLIB_NG = hasattr(zlib, "ZLIBNG_VERSION")
+
+
+@pytest.mark.skipif(_ZLIB_NG, reason="zlib-ng compresses differently from Packet Tracer's zlib")
+@pytest.mark.parametrize("name", ["catalogue_network.pkt", "catalogue_end.pkt", "modules.pkt", "activity.pka"])
+def test_packet_tracer_saves_reencode_byte_for_byte(name):
+    """Packet Tracer 8.2.0 compresses at level 9 (78 DA), and zlib at level 9
+    gives its bytes back: seen 28 Oct 2026 on every source file saved straight
+    from Packet Tracer. (The round 2 samples don't: their RECENT_FILES was
+    emptied on Python 3.14 for Windows, whose zlib-ng compresses differently.)"""
+    raw = (SOURCES / name).read_bytes()
+    xml, level = decode_with_level(raw)
+    assert level == 9
+    assert pktlib.encode(xml, level) == raw
+
+
+@pytest.mark.parametrize("level", [1, 5, 6, 9])
+def test_a_network_saves_at_the_level_it_was_loaded_at(routed_xml, level):
+    net = pktlib.Network.from_bytes(pktlib.encode(routed_xml, level))
+    assert decode_with_level(net.to_bytes())[1] == level
+    assert decode_with_level(pktlib.new().to_bytes())[1] == 9
 
 
 def test_encode_is_deterministic(routed_xml):
