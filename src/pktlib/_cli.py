@@ -3,7 +3,8 @@
 pktlib decode  in.pkt  [out.xml]     .pkt -> Packet Tracer XML
 pktlib encode  in.xml  out.pkt       XML -> .pkt
 pktlib info    in.pkt                devices, ports in use, links, addresses
-                                     (a .pka: its items and tests, then the answer network)
+                                     (a .pka: its items and tests; --answers adds
+                                     the values, then the answer network)
 pktlib audit   in.pkt                what's wrong that can be seen in the file (exit 1 if anything)
                                      (a .pka: its answer network)
 pktlib dump    in.pkt  [out.py]      .pkt -> a Python script that rebuilds it
@@ -44,7 +45,7 @@ def _edition(net: Network) -> str:
     return f"edition {net.edition}" if net.edition else "an edition pktlib doesn't know"
 
 
-def _info(path: str) -> str:
+def _info(path: str, *, answers: bool = False) -> str:
     found = _open(path, strict=False)  # reading only: say what it is, whatever version
     if isinstance(found, Network):
         return f"Packet Tracer {found.version} ({_edition(found)})\n\n" + _network_info(found)
@@ -53,12 +54,16 @@ def _info(path: str) -> str:
         f"Packet Tracer activity {act.answer.version} ({_edition(act.answer)})",
         f"{len(act.items)} item(s), {len(act.tests)} connectivity test(s), {len(act.instructions)} instruction page(s)",
         "",
-        "Items (start -> answer, points):",
+        "Items (start -> answer, points):" if answers else "Items (points):",
     ]
-    lines += [f"  {' > '.join(i.path)}: {i.initial!r} -> {i.expected!r}, {i.points}" for i in act.items]
+    for i in act.items:
+        where = " > ".join(i.path)
+        lines.append(f"  {where}: {i.initial!r} -> {i.expected!r}, {i.points}" if answers else f"  {where}, {i.points}")
     if act.tests:
         lines += ["", "Connectivity tests:"]
         lines += [f"  {t.source} -> {t.destination} ({'succeeds' if t.succeed else 'fails'})" for t in act.tests]
+    if not answers:
+        return "\n".join(lines) + "\n\nThe values and the answer network: pktlib info --answers\n"
     return "\n".join(lines) + "\n\nAnswer network:\n" + _network_info(act.answer)
 
 
@@ -118,7 +123,9 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("encode")
     p.add_argument("src")
     p.add_argument("dst")
-    sub.add_parser("info").add_argument("src")
+    p = sub.add_parser("info")
+    p.add_argument("src")
+    p.add_argument("--answers", action="store_true", help="a .pka: show each item's value and the answer network")
     sub.add_parser("audit").add_argument("src", nargs="+")
     args = ap.parse_args(argv)
 
@@ -130,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
             Network.from_xml(xml, strict=False)  # refuse XML Packet Tracer couldn't open
             _out(args.dst, encode(xml))
         elif args.cmd == "info":
-            _out(None, _info(args.src))
+            _out(None, _info(args.src, answers=args.answers))
         elif args.cmd == "audit":
             return _audit_files(args.src)
         elif args.cmd == "dump":

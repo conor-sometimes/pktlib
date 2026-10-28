@@ -70,7 +70,7 @@ lists what and how we know.
 
 | Command | What it does |
 |---|---|
-| `pktlib info lab.pkt` | devices, links and addresses (a `.pka`: its items and tests too) |
+| `pktlib info lab.pkt` | devices, links and addresses (a `.pka`: its items and tests; `--answers` adds the values) |
 | `pktlib audit lab.pkt` | problems you can see without running the simulation; exit code 1 if any (a `.pka`: its answer network) |
 | `pktlib dump lab.pkt [out.py]` | a Python script that rebuilds the file |
 | `pktlib decode lab.pkt [out.xml]` / `encode in.xml out.pkt` | the raw XML |
@@ -83,6 +83,32 @@ lists what and how we know.
   handles, the file format
 - [Examples](https://github.com/conor-sometimes/pktlib/blob/main/examples/README.md): every example, by folder; [which were opened in Packet Tracer](https://github.com/conor-sometimes/pktlib/blob/main/docs/examples.md)
 - [Changelog](https://github.com/conor-sometimes/pktlib/blob/main/CHANGELOG.md)
+
+## Legal and ethical use
+
+- **Not Cisco's.** pktlib is an independent project, not affiliated with or endorsed by
+  Cisco. Cisco and Packet Tracer are Cisco's trademarks.
+- **No Cisco code.** The file format comes from published work by the projects below, and
+  was checked by opening files in Packet Tracer. The device templates in the package are
+  copied from files Packet Tracer 8.2 saved. To open what pktlib writes, you need your own
+  copy of Packet Tracer from Cisco Networking Academy.
+- **Coursework.** Follow your course's rules. Anyone holding a `.pka` can read its answer
+  network and graded items: `pktlib info --answers` lists them, and the activity password
+  only locks Packet Tracer's Activity Wizard. Don't use pktlib to read the answers to an
+  activity you're being graded on. And if you set activities, don't count on a `.pka` to
+  keep its answers secret.
+- **No course material here.** This repo holds no lecturer or NetAcad files. Every sample
+  file says where it came from in
+  [tests/fixtures/README.md](https://github.com/conor-sometimes/pktlib/blob/main/tests/fixtures/README.md).
+
+## Related projects
+
+- [pka2xml](https://github.com/mircodz/pka2xml) (BSD-2-Clause, 2020): the first public
+  description of the encryption. pktlib's codec re-implements it in Python.
+- [packet-tracer-pkt-format](https://github.com/aacanadaa/packet-tracer-pkt-format)
+  (GPL-3.0): a full format reference, covering files from Packet Tracer 4.1 to 9.0.1. Read
+  its FORMAT.md if you want to know exactly how a `.pkt` is built. pktlib uses none of its
+  code.
 
 ## Development
 

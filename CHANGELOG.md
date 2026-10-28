@@ -11,8 +11,10 @@
   `diff_items()` (so `Lab.build(pka=True)`) picks them, keeping config lines for what the
   wizard can't grade (static routes, PAT's `overload`).
 - `net.note(text, html=True)` writes markup on purpose; `Note.html` is the stored text.
-- `pktlib info` and `pktlib audit` read a `.pka`: info lists its items, tests and answer
-  network; audit checks the answer network.
+- `pktlib info` and `pktlib audit` read a `.pka`: info lists its items and tests
+  (`--answers` adds each item's value and the answer network); audit checks the answer
+  network.
+- README: Legal and ethical use, and Related projects.
 - A loaded file is saved at the zlib level it was compressed at (Packet Tracer's is 9), and
   `pktlib.decode()` then `encode()` gives a file Packet Tracer saved back byte for byte.
 - pktlib refuses what Packet Tracer 8.2 drops without a word (seen in round 1 of the checks):
