@@ -10,7 +10,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 import pktlib
-from pktlib import PktError
+from pktlib import PktError, PktWarning
 from pktlib._codec import decode
 from pktlib._xml import req
 from tests.conftest import examples
@@ -582,3 +582,35 @@ def test_note_text_is_shown_as_written(net):
     assert [x.html for x in again.notes] == [n.html, bold.html]
     script = pktlib.to_python(again)
     assert "html=True" in script and "x &lt; 10" in script
+
+
+def test_config_warns_of_a_short_vty_password_whichever_call_set_what():
+    # 6 Nov 2026 on a 2901: gone after a reload (see test_iosconfig)
+    vty = "line vty 0 4\n password cisco"
+    both = pktlib.new(seed=611).router("R1", "2901")
+    with pytest.warns(PktWarning, match="min-length 10") as seen:
+        both.config(f"security passwords min-length 10\n{vty}")
+    assert len(seen) == 1
+
+    password_first = pktlib.new(seed=612).router("R1", "2901")
+    password_first.config(vty)
+    with pytest.warns(PktWarning, match="password cisco"):
+        password_first.config("security passwords min-length 10")
+
+    minimum_first = pktlib.new(seed=613).router("R1", "2901")
+    minimum_first.config("security passwords min-length 10")
+    with pytest.warns(PktWarning, match="password cisco"):
+        minimum_first.config(vty)
+
+
+def test_config_warns_once_not_on_every_later_call():
+    r = pktlib.new(seed=614).router("R1", "2901")
+    with pytest.warns(PktWarning):
+        r.config("security passwords min-length 10\nline vty 0 4\n password cisco")
+    r.config("hostname Quiet")  # warnings are errors in the suite
+    r.config("line vty 0 4\n password cisco12345")  # the fix
+
+
+def test_a_password_at_min_length_gives_no_warning():
+    r = pktlib.new(seed=615).router("R1", "2901")
+    r.config("security passwords min-length 10\nline vty 0 4\n password cisco12345")

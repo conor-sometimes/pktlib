@@ -82,8 +82,8 @@ def _num(x: float) -> str:
 
 def to_python(net: Network, out: str = "out.pkt") -> str:
     """Python source that builds an equivalent network and saves it to `out`.
-    Positions, fitted modules, cables, PC addresses and every non-default line
-    of IOS config come across; the rest is Packet Tracer's own defaults."""
+    Positions, fitted modules, flash folders, cables, PC addresses and every
+    non-default line of IOS config come across; the rest is Packet Tracer's own defaults."""
     lines = [
         f'"""Rebuilds a Packet Tracer {net.version} network. Run: python this.py"""',
         "import pktlib",
@@ -128,6 +128,8 @@ def to_python(net: Network, out: str = "out.pkt") -> str:
         for v in sorted(vlans):
             if default_vlans.get(v) != vlans[v]:
                 lines.append(f"{var[d.name]}.add_vlan({v}, {vlans[v]!r})")
+        for folder in d.flash_folders:
+            lines.append(f"{var[d.name]}.mkdir({folder!r})")
         # end devices that take their address from DHCP
         if not d.has_ios:
             for p in d:
