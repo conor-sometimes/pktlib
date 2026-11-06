@@ -97,3 +97,19 @@ def test_overlapping_subnets_on_one_router_are_flagged(net):
     ]
     r.config("interface g0/2\n ip address 10.0.1.1 255.255.255.0")
     assert not [p for p in pktlib.audit(net) if "overlaps" in str(p)]
+
+
+def test_a_vty_password_under_min_length_is_flagged():
+    # 6 Nov 2026 on a 2901: gone after a reload (see test_iosconfig). The audit reads what's in the file.
+    net = pktlib.new(seed=610)
+    r = net.router("R1", "2901")
+    r.running_config = [
+        *r.running_config[:-1],
+        "line vty 0 4",
+        " password cisco",
+        "security passwords min-length 10",
+        "end",
+    ]
+    found = [p for p in pktlib.audit(net) if "min-length" in p]
+    assert len(found) == 1 and found[0].devices == ("R1",)
+    assert found[0].startswith("R1: `password cisco` under `line vty 0 4`")

@@ -109,6 +109,9 @@ Reading:
 - `d.vlans` (number to name, read-only), `d.add_vlan(n, name=None)`, `d.remove_vlan(n)`.
 - `d.licenses`, `d.enable_license("securityk9")`.
 - `d.generate_rsa_key(1024)` (needs `ip domain-name`), `d.rsa_key` (`RsaKey(name, bits)`).
+- `d.mkdir("ipsdir")` makes a folder in `flash:`, as the CLI's `mkdir` does (it's not config, so
+  `config()` can't), and `d.flash_folders` lists them. `ip ips config location flash:ipsdir`
+  needs the folder there.
 
 ## Hardware
 
@@ -143,11 +146,12 @@ for problem in pktlib.audit(net):
 owns or outside the subnet; cabled router ports left shut; the two ends of a link in
 different subnets; serial DCE ends with no clock rate; routers with several networks and no
 routing; shared OSPF router-ids; router ports given their subnet's network or broadcast
-address, or a subnet overlapping another port's; and config Packet Tracer drops on load. It reads the file
+address, or a subnet overlapping another port's; and config Packet Tracer drops on load or on a
+reload, such as a VTY password under `security passwords min-length`. It reads the file
 only, so still test in Packet Tracer.
 
 Also: `net.duplicate_macs()`, `net.duplicate_link_locals()`,
-`pktlib.refused(lines, model=None)` (config Packet Tracer drops on load; give the model,
+`pktlib.refused(lines, model=None)` (config Packet Tracer drops; give the model,
 such as `"2960-24TT"`, for its own rules), and
 `pktlib.password_matches(stored, password)` for a `password 7 ...` or `secret 5 ...` line.
 

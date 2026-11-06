@@ -404,3 +404,39 @@ def test_refused_2960_port_lines_need_the_model():
     assert refused(lines, "3560-24PS") == []  # a multilayer switch has routed ports
     assert [l for l, _ in refused(lines, "2960-24TT")] == lines[1:]
     assert refused(["interface Vlan1", " ip address 10.0.0.1 255.255.255.0"], "2960-24TT") == []
+
+
+MIN_10 = "security passwords min-length 10"
+
+
+def test_short_vty_password_is_refused_wherever_min_length_sits():
+    # 6 Nov 2026, a 2901 under min-length 10: `password cisco` on the VTY lines was gone after a
+    # reload, with min-length below the line blocks, where config() writes it
+    vty = ["line vty 0 4", " password cisco", "line vty 5 15", " password cisco"]
+    for lines in ([MIN_10, *vty], [*vty, MIN_10]):
+        found = refused(lines)
+        assert [l.strip() for l, _ in found] == ["password cisco", "password cisco"]
+        assert "`line vty 0 4`" in found[0][1] and "`line vty 5 15`" in found[1][1]
+        assert "min-length 10" in found[0][1]
+
+
+def test_a_password_exactly_min_length_stays():
+    # same test, same day: `cisco12345` (exactly 10) survived the reload
+    assert refused([MIN_10, "line vty 0 4", " password cisco12345"]) == []
+    assert refused(["line vty 0 4", " password cisco"]) == []  # no minimum set
+
+
+def test_the_last_word_on_min_length_and_on_the_password_counts():
+    vty = ["line vty 0 4", " password cisco"]
+    assert refused([MIN_10, "security passwords min-length 5", *vty]) == []
+    assert refused([MIN_10, "no security passwords min-length", *vty]) == []
+    assert refused([MIN_10, "line vty 0 4", " password cisco", " password cisco12345"]) == []
+    assert refused([MIN_10, "line vty 0 4", " password cisco", " no password"]) == []
+    assert refused([MIN_10, "line vty 0 4", " password cisco12345", " password cisco"]) != []
+
+
+def test_lines_not_seen_dropped_arent_reported():
+    # only plain VTY passwords were tried: see TODO.md
+    assert refused([MIN_10, "line con 0", " password cisco", "line aux 0", " password cisco"]) == []
+    assert refused([MIN_10, "line vty 0 4", " password 7 0822455D0A16"]) == []
+    assert refused([MIN_10, "enable password cisco", "username a password cisco"]) == []
