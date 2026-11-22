@@ -1,7 +1,7 @@
 """Random networks built through the public API, checked after every step.
 
 Hypothesis drives a sequence of calls (add devices, cable them, address and configure them,
-VLANs, modules, licences, SSH keys, renames, removals, pings, drawings, save and reload,
+VLANs, modules, licences, SSH keys, flash folders, renames, removals, pings, drawings, save and reload,
 export to Python and rebuild), with good arguments and bad ones. A shadow model keeps the
 device names and the number of cables the calls should have left. After every step:
 
@@ -226,6 +226,13 @@ class Networks(RuleBasedStateMachine):
         else:
             self.attempt("domain", lambda: d.config("ip domain-name lab.local"))
             self.attempt("rsa_key", lambda: d.generate_rsa_key(bits))
+
+    @precondition(lambda self: len(self.net) >= 1)
+    @rule(data=st.data(), name=st.sampled_from(["ipsdir", "flash:ipsdir", "Zed", "a/b", "two words", "", "flash:", 7]))
+    def folder(self, data, name):
+        d = self.device(data)
+        if self.attempt("mkdir", lambda: d.mkdir(name)):
+            assert name.removeprefix("flash:") in d.flash_folders
 
     @precondition(lambda self: len(self.net) >= 2)
     @rule(

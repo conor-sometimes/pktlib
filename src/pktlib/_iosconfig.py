@@ -93,9 +93,42 @@ _REFUSED: list[tuple[frozenset[str] | None, re.Pattern[str] | None, re.Pattern[s
 ]
 
 
+def short_passwords(lines: list[str]) -> list[tuple[str, str]]:
+    """`line vty` passwords Packet Tracer 8.2 drops on a reload for being under
+    `security passwords min-length`: [(line, reason)]. Seen 6 Nov 2026 on a 2901
+    under min-length 10: `password cisco` was gone after a reload and `cisco12345`,
+    exactly 10, stayed. The file had min-length after the line blocks, where
+    config() writes it, so where it sits doesn't save the password. Console and
+    aux lines, and the `password 7` form, weren't tried, so they aren't reported."""
+    parsed = blocks(lines)
+    minimum = 0
+    for header, _ in parsed:
+        if match := re.fullmatch(r"security passwords min-length (\d+)", " ".join(header.lower().split())):
+            minimum = int(match[1])
+        elif header.lower().startswith("no security passwords"):
+            minimum = 0
+    out: list[tuple[str, str]] = []
+    for header, body in parsed:
+        if not header.lower().startswith("line vty"):
+            continue
+        # a later password replaces an earlier one
+        words = next(
+            (w for w in map(str.split, reversed(body)) if w[:1] == ["password"] or w[:2] == ["no", "password"]), []
+        )
+        if len(words) < 2 or words[0] == "no" or (len(words) > 2 and words[1].isdigit()):
+            continue
+        if len(" ".join(words[1:])) < minimum:
+            why = (
+                f"under `{header}` is dropped by Packet Tracer 8.2 on a reload: "
+                f"it's shorter than `security passwords min-length {minimum}`"
+            )
+            out.append((" " + " ".join(words), why))
+    return out
+
+
 def refused(lines: list[str], model: str | None = None) -> list[tuple[str, str]]:
-    """Lines Packet Tracer 8.2 won't apply on load, with why: [(line, reason)].
-    `model` ('2960-24TT') adds the rules for that device."""
+    """Lines Packet Tracer 8.2 won't apply on load or keeps only until a reload,
+    with why: [(line, reason)]. `model` ('2960-24TT') adds the rules for that device."""
     out: list[tuple[str, str]] = []
     header = ""
     for line in lines:
@@ -108,7 +141,7 @@ def refused(lines: list[str], model: str | None = None) -> list[tuple[str, str]]
                 continue
             if rx.search(line):
                 out.append((line, why))
-    return out
+    return out + short_passwords(lines)
 
 
 _MERGEABLE = (

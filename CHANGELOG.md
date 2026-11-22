@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `d.mkdir("ipsdir")` makes a folder in `flash:`, and `d.flash_folders` lists them.
+  `ip ips config location flash:ipsdir` needs the folder, and no config line makes it.
+  `to_python()` carries folders across.
+- A VTY password shorter than `security passwords min-length` gives a `PktWarning` from
+  `config()` and shows in `refused()` and `audit()`: Packet Tracer drops it on a reload.
+
 ## 0.2.2 (29 Oct 2026)
 
 ### Added

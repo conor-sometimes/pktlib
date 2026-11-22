@@ -28,7 +28,7 @@ from typing import Any, Literal, NamedTuple, get_args
 from . import _editions as editions
 from ._codec import decode_with_level, encode
 from ._errors import FileFormatError, NotFound, PktError, PktWarning
-from ._iosconfig import blocks, interface_state, interfaces, merge_config, refused
+from ._iosconfig import blocks, interface_state, interfaces, merge_config, refused, short_passwords
 from ._modules import SLOT_WORDS, Slot, fresh_module, module_models, port_names_for, slots
 from ._ports import _PORT_RE, _PREFIX, CABLE_TYPES, canonical_port, expand_range, is_serial, port_sort_key
 from ._shapes import Note, Shape, check_note_text, make_note, make_shape
@@ -813,8 +813,8 @@ class Device:
         Lines are written as IOS saves them: tabs count as one space of
         indent, and mode changes (`exit`, `end`, `configure terminal`) are
         left out, since a saved config has none and Packet Tracer replays the
-        file top to bottom. Config Packet Tracer is known to drop on load
-        raises a PktWarning (see iosconfig.refused).
+        file top to bottom. Config Packet Tracer is known to drop, on load or
+        on a reload, raises a PktWarning (see iosconfig.refused).
 
         `interface X` for a physical port the device doesn't have is refused,
         as IOS refuses it: names of ports on models without a checked name
@@ -846,9 +846,12 @@ class Device:
         ):
             # switches, and routers with an EtherSwitch card
             commands, add, remove = self._plan_vlans(commands)
-        for line, why in refused(commands, self.model):
-            warnings.warn(f"{self.name}: `{line.strip()}` {why}", PktWarning, stacklevel=3)
         merged = merge_config(self.running_config, commands)
+        # a password and the min-length it falls under can come in separate calls
+        before = short_passwords(self.running_config)
+        found = refused(commands, self.model) + [p for p in short_passwords(merged) if p not in before]
+        for line, why in dict.fromkeys(found):
+            warnings.warn(f"{self.name}: `{line.strip()}` {why}", PktWarning, stacklevel=3)
         # everything is checked; now change the device
         for v in remove:
             if v in self.vlans:
@@ -1085,6 +1088,54 @@ class Device:
         if sec is None or sec.findtext("ENABLED") != "1":
             return None
         return RsaKey(sec.findtext("KEY_NAME") or "", int(_number(sec.findtext("MODULUS_BITS") or "0", "MODULUS_BITS")))
+
+    def _flash(self) -> ET.Element | None:
+        """The device's own flash: (an 829's embedded AP has another further down)."""
+        return self.engine.find("FILE_MANAGER/FILE/FILES/FILE[NAME='flash:']")
+
+    @property
+    def flash_folders(self) -> list[str]:
+        """Names of the folders in flash:, as `dir flash:` lists them; make one with mkdir()."""
+        flash = self._flash()
+        files = [] if flash is None else flash.findall("FILES/FILE")
+        return [f.findtext("NAME") or "" for f in files if f.get("class") == "CDirectory"]
+
+    def mkdir(self, name: str) -> None:
+        """What `mkdir name` does in the CLI: a folder in flash: (`ipsdir` or
+        `flash:ipsdir`). It's exec, not config, so no config() line can make
+        it; `ip ips config location flash:ipsdir` needs it there. Already
+        there, nothing changes.
+
+        Packet Tracer 8.2 lists it in `dir flash:` as `drw-`, size 192, and
+        takes it as the IPS location, the same as a typed mkdir (2901, 6 Nov
+        2026). `dir ipsdir` and `cd ipsdir` give errors on either. The shape,
+        the numbering (one FILE_COUNTER per file system) and the name order are
+        as Packet Tracer saved an 829's folders in c:. Those are dated, but
+        date 0 was what was seen working, and it keeps a seeded build the same.
+        Folders inside folders haven't been seen in flash:, so they're refused."""
+        _check_str(name, "a folder name")
+        flash = self._flash()
+        if flash is None:
+            raise PktError(f"{self.name} ({self.model}) has no flash:")
+        folder = name.removeprefix("flash:")
+        if not re.fullmatch(r"[^\s/\\:\x00-\x1f\x7f]+", folder):
+            raise PktError(f"a folder in flash: is one name with no spaces, slashes or colons, got {name!r}")
+        files, counter = flash.find("FILES"), flash.find("FILE_COUNTER")
+        if files is None or counter is None:
+            raise FileFormatError(f"{self.name}'s flash: has no FILES or FILE_COUNTER")
+        for f in files.findall("FILE"):
+            if f.findtext("NAME") == folder:
+                if f.get("class") == "CDirectory":
+                    return
+                raise PktError(f"{self.name} already has a file called {folder} in flash:")
+        number = str(int(_number(counter.text or "", f"{self.name}'s FILE_COUNTER")) + 1)
+        new = ET.Element("FILE", {"class": "CDirectory"})
+        for tag, text in (("FILE_NUMBER", number), ("NAME", folder), ("DATE_TIME", "0"), ("PERMISSION", "6")):
+            ET.SubElement(new, tag).text = text
+        ET.SubElement(new, "FILE_CONTENT")
+        ET.SubElement(new, "FILES")
+        files.insert(sum(1 for f in files.findall("FILE") if (f.findtext("NAME") or "") < folder), new)
+        counter.text = number
 
     # the network around it
     @property

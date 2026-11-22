@@ -8,8 +8,9 @@ Duplicate addresses (MAC, IPv4, IPv6 link-local), config Packet Tracer 8.2 is
 known to refuse, PC gateways nobody owns, the two ends of a link in different
 subnets, cabled ports left shut down, serial DCE ends with no clock rate,
 routers with more than one network and no routing at all, shared OSPF
-router-ids, router ports given their subnet's network or broadcast address, or
-a subnet that overlaps another port's on the same router.
+router-ids, router ports given their subnet's network or broadcast address, a
+subnet that overlaps another port's on the same router, or a VTY password under
+`security passwords min-length`.
 A clean audit doesn't prove a ping works: still test in Packet Tracer.
 """
 

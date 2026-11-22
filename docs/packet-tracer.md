@@ -82,6 +82,11 @@ Found the hard way while testing the examples:
 - **An RSA key isn't config.** `crypto key generate rsa` is typed, never saved
   in `show run`; Packet Tracer keeps the key in the device's SECURITY section.
   `generate_rsa_key` writes one there, and SSH logins to it work.
+- **A flash folder isn't config either.** `mkdir` is typed, never saved in
+  `show run`; the folder is a `CDirectory` entry in the device's file manager.
+  `mkdir()` writes one. `dir flash:` lists it as `drw-`, size 192, and `ip ips
+  config location` takes it; `dir ipsdir` and `cd ipsdir` give errors on any
+  folder, a typed `mkdir`'s too.
 - **Names before the interfaces that use them.** IOS refuses a
   `zone-member security` line for a zone that doesn't exist yet, and saves
   zones, IPS rules and crypto maps above the interfaces. pktlib puts new
@@ -106,6 +111,11 @@ Found the hard way while testing the examples:
   with `include-connected`. On a 2960, `no switchport` and `ip address` on a
   port are both dropped (its address goes on `interface Vlan1`). `refused()`,
   the audit and a `PktWarning` from `config()` flag known cases.
+- **A short VTY password goes on a reload.** Under `security passwords
+  min-length 10`, a VTY `password cisco` is gone after a reload, and
+  `cisco12345` stays. The file looks fine until then, and it happens with
+  min-length written below the line blocks too. `refused()`, the audit and a
+  `PktWarning` from `config()` flag it, whichever call added which.
 - **Some things vanish on load.** A second VLAN with a name already in use is
   dropped whole (so is every VLAN after the first in a range given one
   `name`), a cable between two ports of one device is gone, and a 7960

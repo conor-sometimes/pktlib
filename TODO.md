@@ -13,6 +13,15 @@ just examples                  # rebuild and audit the examples into out/
   FE80::202:BAFF:FE64:6A24, not the template's FE80::290:CFF:FEC7:8E5A. The fix for cloned
   link-locals hasn't been seen in the GUI yet.
 
+- `d.mkdir()`: a hand-written folder placed first in `flash:` was seen working on a 2901 (6 Nov).
+  `mkdir()` puts it in name order, as Packet Tracer saves. Open a file built with it on a 2901
+  and confirm `dir flash:` shows `ipsdir` as `drw-`, size 192, and `show ip ips all` has the
+  location. Then try a 2960 and a 3650, where no folder has been seen, and a folder inside a
+  folder (`mkdir()` refuses those until one is seen in `flash:`).
+- `security passwords min-length`: only a VTY password in plain text on a 2901 was seen dropped
+  on a reload. Under min-length 10, reload with a short password on `line con 0`, on `line aux
+  0`, in the `password 7` form, and on a switch, and add what goes to `short_passwords()`.
+
 ## Limits checked in Packet Tracer (round 1, 27 Oct)
 
 Done: pktlib refuses, warns or audits each silent drop (VLAN name in use, 2960 port
