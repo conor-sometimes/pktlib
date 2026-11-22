@@ -80,6 +80,11 @@ name, a cable choice or a "refused" line from memory or from real-IOS knowledge 
 
 ## Checking in Packet Tracer
 
+If this machine has Packet Tracer, start with the "To check in Packet Tracer" list in
+`TODO.md`: it says how to build the files, what to do with each and what to expect. Write the
+results in `pt-results/`, as earlier rounds did, and take each item off the list once a test
+pins it.
+
 A change that affects what Packet Tracer does isn't done until it has been opened there:
 - the file loads ("not compatible with this version" means a bad port name or version stamp);
 - the links come up;

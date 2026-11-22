@@ -244,13 +244,70 @@ def test_diff_items_finds_what_changed():
     assert ("SW1", "VLANS", "VLAN 20", "VLAN Name") in got
     assert ("R2", "OSPF", "Process ID 1", "Networks", "Route1") in got
     assert ("R1", "Running Configuration", "enable secret class12345") in got
-    # graded by other kinds, or noise: no interface, router ospf, licence or "!" lines
+    # graded by other kinds, or noise: no router ospf, licence or "!" lines. The access
+    # ports stay lines (issue #10): Port Mode reads 1 for access and unset alike
     lines = [p for p in got if p[1] == "Running Configuration"]
     assert lines == [
         ("R1", "Running Configuration", "enable secret class12345"),
         ("R2", "Running Configuration", "enable secret class12345"),
+        ("SW1", "Running Configuration", "interface FastEthernet0/1", "switchport mode access"),
+        ("SW1", "Running Configuration", "interface FastEthernet0/2", "switchport mode access"),
     ]
     assert diff_items(pktlib.load(FIXTURES / "rich-answer.pkt"), pktlib.load(FIXTURES / "rich-answer.pkt")) == []
+
+
+def _on_a_stick(*subs: tuple[int, str]) -> pktlib.Network:
+    net = pktlib.new(seed=4)
+    r, sw = net.router("R1", "2901"), net.switch("SW1")
+    r["g0/1"].connect(sw["g0/1"])
+    if subs:
+        r.config(["interface GigabitEthernet0/1", " no shutdown"])
+    for tag, addr in subs:
+        r.config([f"interface GigabitEthernet0/1.{tag}", f" encapsulation dot1Q {tag}", f" ip address {addr}"])
+    return net
+
+
+def test_diff_items_grades_sub_interfaces():
+    """Issue #9: sub-interfaces have no Ports items, so their lines are items."""
+    answer = _on_a_stick((10, "10.0.10.1 255.255.255.0"), (20, "10.0.20.1 255.255.255.0"))
+    start = _on_a_stick()
+    got = diff_items(answer, start)
+    for tag in (10, 20):
+        head = f"interface GigabitEthernet0/1.{tag}"
+        assert ("R1", "Running Configuration", head, f"encapsulation dot1Q {tag}") in got
+        assert ("R1", "Running Configuration", head, f"ip address 10.0.{tag}.1 255.255.255.0") in got
+    assert ("R1", "Running Configuration", "interface GigabitEthernet0/1", "no shutdown") in got
+    act = activity_from_xml(make_activity(answer, start, got).to_xml())
+    assert all(ok for _, ok in act.score(answer)) and not any(ok for _, ok in act.score(start))
+    # a changed address between two configured networks is an item too
+    moved = _on_a_stick((10, "10.0.10.254 255.255.255.0"), (20, "10.0.20.1 255.255.255.0"))
+    assert diff_items(answer, moved) == [
+        ("R1", "Running Configuration", "interface GigabitEthernet0/1.10", "ip address 10.0.10.1 255.255.255.0")
+    ]
+
+
+def _access(mode: str | None) -> pktlib.Network:
+    net = pktlib.new(seed=4)
+    sw = net.switch("SW1")
+    if mode:
+        sw.config(["interface FastEthernet0/5", f" switchport mode {mode}"])
+    return net
+
+
+def test_diff_items_grades_an_access_port_the_start_leaves_unset():
+    """Issue #10: `Port Mode` reads 1 for access and for unset, so the line is the item."""
+    got = diff_items(_access("access"), _access(None))
+    assert got == [("SW1", "Running Configuration", "interface FastEthernet0/5", "switchport mode access")]
+    act = activity_from_xml(make_activity(_access("access"), _access(None), got).to_xml())
+    assert [ok for _, ok in act.score(_access("access"))] == [True]
+    assert [ok for _, ok in act.score(_access(None))] == [False]
+    assert [ok for _, ok in act.score(_access("trunk"))] == [False]
+
+
+def test_a_port_item_that_differs_isnt_graded_twice():
+    # trunk in the start: Port Mode tells them apart, so the line isn't added as well
+    got = diff_items(_access("access"), _access("trunk"))
+    assert got == [("SW1", "Ports", "FastEthernet0/5", "Port Mode")]
 
 
 def test_tests_reuse_the_labs_pings_and_go_first(tmp_path):
@@ -384,8 +441,11 @@ def test_diff_items_grades_acls_nat_and_dhcp_once():
     items = [" > ".join(p) for p in diff_items(answer, start)]
     assert {p for p, _ in RICH2} - set(items) == {"R1 > NAT > Inside Source List > NAT Source Setting 1"}
     lines = [p for p in items if "Running Configuration" in p]
-    # what the wizard can't grade stays a config line: static routes, and PAT with its overload
+    # what the wizard can't grade stays a config line: ports brought up, static routes,
+    # and PAT with its overload
     assert lines == [
+        "R1 > Running Configuration > interface GigabitEthernet0/0 > no shutdown",
+        "R1 > Running Configuration > interface GigabitEthernet0/1 > no shutdown",
         "R1 > Running Configuration > ip route 0.0.0.0 0.0.0.0 198.51.100.1",
         "R1 > Running Configuration > ip route 10.20.0.0 255.255.0.0 198.51.100.1",
         "R1 > Running Configuration > ip nat inside source list 1 interface GigabitEthernet0/1 overload",

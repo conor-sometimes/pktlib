@@ -10,6 +10,13 @@
 - A VTY password shorter than `security passwords min-length` gives a `PktWarning` from
   `config()` and shows in `refused()` and `audit()`: Packet Tracer drops it on a reload.
 
+### Fixed
+
+- `diff_items()` (so `Lab.build(pka=True)`) grades router sub-interfaces and a port brought
+  up with `no shutdown` (#9), and `switchport mode access` on a port the start leaves unset
+  (#10). Interface lines are left out only when a Ports item that differs already grades them.
+- A second `vtp password` replaces the first instead of adding another line (#8).
+
 ## 0.2.2 (29 Oct 2026)
 
 ### Added

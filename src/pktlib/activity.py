@@ -261,7 +261,16 @@ _SWITCHES = {"Switch", "MultiLayerSwitch"}
 _DEFAULT_VLANS = {1, 1002, 1003, 1004, 1005}
 # config lines that differ between any two builds, or say nothing
 _NOISE = re.compile(r"^(!|end|version |license udi |no service timestamps|$)")
-_GRADED_BLOCKS = ("interface ", "router ospf ", "vlan ", "hostname ")  # other kinds grade these
+_GRADED_BLOCKS = ("router ospf ", "vlan ", "hostname ")  # other kinds grade these
+# lines in an interface block that a Ports item grades, by the item's leaf
+_PORT_LEAVES = (
+    (re.compile(r"ip address \S+ \S+$"), ("IP Address", "Subnet Mask")),
+    (re.compile(r"switchport access vlan "), ("Access VLAN",)),
+    (re.compile(r"switchport mode "), ("Port Mode",)),
+    (re.compile(r"ip access-group \S+ in$"), ("Access-group In",)),
+    (re.compile(r"ip access-group \S+ out$"), ("Access-group Out",)),
+    (re.compile(r"ip nat (inside|outside)$"), ("NAT Mode",)),
+)
 
 
 def _candidates(nets: Sequence[Network]) -> list[tuple[str, ...]]:
@@ -329,6 +338,15 @@ def _ios_candidates(name: str, devs: Sequence[Device]) -> list[tuple[str, ...]]:
     return out
 
 
+def _port_item(name: str, header: str | None, line: str, items: list[tuple[str, ...]]) -> bool:
+    """Whether a Ports item already in `items` grades this interface line."""
+    if header is None or not header.startswith("interface ") or not line.startswith(" "):
+        return False
+    port = header.split(maxsplit=1)[1]
+    leaves = next((v for rx, v in _PORT_LEAVES if rx.match(line.strip())), ())
+    return any((name, "Ports", port, leaf) in items for leaf in leaves)
+
+
 def _graded_elsewhere(header: str | None, line: str) -> bool:
     """Whether another item kind grades this config line (so it isn't graded twice).
     `ip nat inside source list` stays a line: the wizard's item ignores `overload`."""
@@ -351,7 +369,10 @@ def diff_items(answer: Network, start: Network) -> list[tuple[str, ...]]:
     differs between them, plus the answer's config lines the start lacks.
     Lines in blocks the other kinds already grade (interfaces, `router ospf`,
     `vlan`, `hostname`) are left out, so a fault isn't counted twice, and so
-    are licence serials and the like."""
+    are licence serials and the like. An interface line is left out only when
+    the Ports item that grades it is in the list: a sub-interface has no Ports
+    items, and `Port Mode` reads 1 for both access and unset, so those stay
+    lines."""
     items = []
     for path in _candidates([answer, start]):
         want, got = _value(answer, path), _value(start, path)
@@ -366,6 +387,8 @@ def diff_items(answer: Network, start: Network) -> list[tuple[str, ...]]:
             if not line.startswith(" "):
                 header = line
             if _NOISE.match(line.strip()) or _graded_elsewhere(header, line):
+                continue
+            if _port_item(d.name, header, line, items):
                 continue
             if line.startswith(" "):
                 if header is not None and _find_line(rc_start, header, line) is None:

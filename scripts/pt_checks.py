@@ -1,6 +1,7 @@
 """Build the files to check in Packet Tracer, and the checklist that goes with them.
 
     uv run python scripts/pt_checks.py            # writes out/pt-checks/*.pkt and CHECKS.md
+    uv run python scripts/pt_checks.py 3          # round 3 (TODO.md): out/pt-checks-3/
 
 For whoever has Packet Tracer 8.2.0 (build 8.2.0.0162). Open each file, do what its
 entry says, and write down what Packet Tracer did. Each answer either confirms something
@@ -19,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 import pktlib  # noqa: E402
 from pktlib._xml import req  # noqa: E402
+from pktlib.activity import Activity, diff_items, make_activity  # noqa: E402
 
 OUT = ROOT / "out" / "pt-checks"
 
@@ -29,7 +31,7 @@ class Check:
     why: str
     do: str
     expect: str
-    build: Callable[[], pktlib.Network] | None = None
+    build: Callable[[], pktlib.Network | Activity] | None = None
 
 
 def lan(seed: int = 1) -> tuple[pktlib.Network, pktlib.Device, pktlib.Device, pktlib.Device]:
@@ -449,8 +451,206 @@ CHECKS = [
 ]
 
 
+# --- round 3: issues #8 to #11 and what PR #6 left unseen (22 Nov 2026) -----------
+
+
+def vtp_twice() -> pktlib.Network:
+    net = pktlib.new(seed=30)
+    sw = net.switch("SW1", at=(300, 200))
+    sw.config(["vtp domain LAB", "vtp password one"])
+    sw.config(["vtp password two"])
+    return net
+
+
+def on_a_stick(configured: bool) -> pktlib.Network:
+    net = pktlib.new(seed=31)
+    r = net.router("R1", "2901", at=(300, 100))
+    sw = net.switch("SW1", at=(300, 250))
+    pc1 = net.pc("PC1", at=(200, 400), ip="10.0.10.10/24", gateway="10.0.10.1")
+    pc2 = net.pc("PC2", at=(400, 400), ip="10.0.20.10/24", gateway="10.0.20.1")
+    pc1["fa0"].connect(sw["fa0/1"])
+    pc2["fa0"].connect(sw["fa0/2"])
+    r["g0/1"].connect(sw["g0/1"])
+    sw.config(
+        [
+            "vlan 10",
+            " name STAFF",
+            "vlan 20",
+            " name GUEST",
+            "interface FastEthernet0/1",
+            " switchport mode access",
+            " switchport access vlan 10",
+            "interface FastEthernet0/2",
+            " switchport mode access",
+            " switchport access vlan 20",
+            "interface GigabitEthernet0/1",
+            " switchport mode trunk",
+        ]
+    )
+    if configured:
+        r.config(["interface GigabitEthernet0/1", " no shutdown"])
+        for tag in (10, 20):
+            r.config(
+                [
+                    f"interface GigabitEthernet0/1.{tag}",
+                    f" encapsulation dot1Q {tag}",
+                    f" ip address 10.0.{tag}.1 255.255.255.0",
+                ]
+            )
+    net.ping(pc1, pc2, scenario="PC1 to PC2")
+    return net
+
+
+def on_a_stick_activity() -> Activity:
+    answer, start = on_a_stick(True), on_a_stick(False)
+    return make_activity(
+        answer, start, diff_items(answer, start), "Configure router-on-a-stick on R1.", tests=[("PC1", "PC2")]
+    )
+
+
+def access_port(configured: bool) -> pktlib.Network:
+    net = pktlib.new(seed=32)
+    sw = net.switch("SW1", at=(300, 200))
+    if configured:
+        sw.config(["interface FastEthernet0/5", " switchport mode access"])
+    return net
+
+
+def access_port_activity() -> Activity:
+    answer, start = access_port(True), access_port(False)
+    return make_activity(answer, start, diff_items(answer, start), "Make Fa0/5 on SW1 an access port.")
+
+
+def flash_folders() -> pktlib.Network:
+    net = pktlib.new(seed=33)
+    for i, (kind, model) in enumerate((("router", "2901"), ("switch", "2960-24TT"), ("switch", "3650-24PS"))):
+        d = getattr(net, kind)(f"D{i + 1}", model, at=(150 + 200 * i, 200))
+        d.mkdir("ipsdir")
+    return net
+
+
+def short_passwords() -> pktlib.Network:
+    net = pktlib.new(seed=34)
+    r = net.router("R1", "2901", at=(200, 200))
+    sw = net.switch("SW1", at=(450, 200))
+    r.config(
+        [
+            "security passwords min-length 10",
+            "line con 0",
+            " password cisco",
+            "line aux 0",
+            " password cisco",
+            "line vty 0 4",
+            " password 7 0822455D0A16",
+        ]
+    )
+    sw.config(["security passwords min-length 10", "line con 0", " password cisco", "line vty 0 4", " password cisco"])
+    return net
+
+
+CHECKS_3 = [
+    Check(
+        "vtp-password",
+        "Issue #8: pktlib now keeps one `vtp password` line (the last). Real IOS keeps VTP settings in "
+        "vlan.dat, not the running config, so it's not known whether Packet Tracer saves the line at all.",
+        "Open. On SW1: `show vtp password`, `show vtp status`, `show running-config | include vtp`. Then in "
+        "config mode `vtp password three`, `end`, `copy running-config startup-config`, File > Save As "
+        "vtp-pt.pkt. Run `uv run pktlib show vtp-pt.pkt` (or decode it) and look for `vtp` lines in SW1's "
+        "running and startup config.",
+        "`show vtp password` prints `two`. Record whether Packet Tracer's own save has `vtp password three` "
+        "(and `vtp domain`) in the running config. Send vtp-pt.pkt back with RECENT_FILES emptied.",
+        vtp_twice,
+    ),
+    Check(
+        "on-a-stick-answer",
+        "Issue #9: the answer network of the next check. pktlib writes each new sub-interface block after "
+        "`line vty`, not under its parent as IOS saves it, so it's worth seeing it work.",
+        "Open. On R1: `show ip interface brief`, `show running-config`. Click the 'PC1 to PC2' PDU.",
+        "G0/1.10 and G0/1.20 up/up with their addresses; the ping succeeds. Note where Packet Tracer shows "
+        "the sub-interface blocks in `show running-config`.",
+        lambda: on_a_stick(True),
+    ),
+    Check(
+        "on-a-stick-activity",
+        "Issue #9: diff_items now grades sub-interface lines and the parent's `no shutdown` as Running "
+        "Configuration items. Not yet seen in Packet Tracer: whether Check Results grades an item under "
+        "`interface GigabitEthernet0/1.10`, and whether the Activity Wizard lists sub-interfaces under Ports. "
+        "Each line item carries the answer's line number (`078 interface GigabitEthernet0/1.10`), and the "
+        "answer has the sub-interfaces after `line vty` while a student's IOS puts them under G0/1: if "
+        "Check Results matches by position, a right answer fails, and config() must place them as IOS does.",
+        "Open as a student. Check Results: note every item and whether it's Correct. Configure R1 one line "
+        "at a time (`interface g0/1`, `no shutdown`, `interface g0/1.10`, `encapsulation dot1Q 10`, `ip "
+        "address 10.0.10.1 255.255.255.0`, then the same for .20), checking results after each. Then open "
+        "the Activity Wizard (no password) > Answer Network and look under R1 > Ports for "
+        "GigabitEthernet0/1.10.",
+        "0% at the start, each item turns Correct as its line goes in, 100% and the connectivity test "
+        "Correct at the end. Record whether the wizard's Ports list has the sub-interfaces, and what leaves "
+        "they show (IP Address, Subnet Mask?).",
+        on_a_stick_activity,
+    ),
+    Check(
+        "access-port-activity",
+        "Issue #10: diff_items now grades `switchport mode access` as a line when the start leaves the port "
+        "unset, because Port Mode shows 1 for both.",
+        "Open as a student. Check Results. Then on SW1 `interface fa0/5`, `switchport mode trunk`, Check "
+        "Results; then `switchport mode access`, Check Results.",
+        "Incorrect, Incorrect (trunk), Correct (access). Note the item's name as Check Results shows it.",
+        access_port_activity,
+    ),
+    Check(
+        "spaced-device-name",
+        'Issue #11: pktlib refuses `net.switch("Switch 7")`. Nothing is known about what Packet Tracer '
+        "does with a space in a name, so nothing changes until this is seen.",
+        "In Packet Tracer itself: add a 2960 and a PC-PT. Config tab > Display Name: `Switch 7` and `PC 7`. "
+        "Also try a name with each of `. ( ) # / &` and a 70-character name. On the switch CLI, `hostname "
+        "Switch 7`. Save as spaced-name.pkt, empty RECENT_FILES, then `uv run pktlib show spaced-name.pkt`.",
+        "Record: which names the Display Name box accepts; what the CLI hostname becomes (and whether the "
+        "display name follows it); what pktlib says when loading the file. Send spaced-name.pkt back for "
+        "tests/fixtures.",
+    ),
+    Check(
+        "flash-folders",
+        "PR #6: `mkdir()` was only seen working as a hand-written folder placed first on a 2901. This file "
+        "has `ipsdir` made by `mkdir()` on a 2901 (D1), a 2960 (D2) and a 3650 (D3).",
+        "Open. On each: `dir flash:`. On D1 also `mkdir flash:ipsdir/inner` and `dir flash:ipsdir`, and "
+        "save the file as folders-pt.pkt.",
+        "`ipsdir` listed as `drw-`, size 192, on each. Record any that refuse or don't list it, and whether "
+        "a folder inside a folder works on D1. Send folders-pt.pkt back.",
+        flash_folders,
+    ),
+    Check(
+        "short-passwords",
+        "PR #6: only a plain VTY password on a 2901 was seen dropped on reload under min-length 10. This file "
+        "has short passwords on R1's con, aux and VTY (`password 7` form) and SW1's con and VTY.",
+        "Open. On R1 and SW1: `show running-config | section line`. Then `copy running-config "
+        "startup-config`, `reload`, and the same `show` again.",
+        "Record, for each line block, whether its password is there after opening and after the reload.",
+        short_passwords,
+    ),
+    Check(
+        "command-log",
+        "Packet Tracer saves every CLI command typed, with the time and device, in COMMAND_LOGS (11 "
+        "entries in tests/fixtures/rich2-answer.pkt, from 27 Oct). A file pktlib builds has none. Not "
+        "known: whether the GUI shows this log anywhere, so whether a lecturer marking a file would see it.",
+        "Open tests/fixtures/rich2-answer.pkt. Look through the menus (Extensions, Tools, View, Options) "
+        "and each device's window for anything called a command log or history. Then type a few commands "
+        "on R1 (`enable`, `show ip interface brief`), save as command-log-pt.pkt, and run `uv run python "
+        "-c \"import pktlib, xml.etree.ElementTree as E; x = E.fromstring(pktlib.decode(open('command-log-pt.pkt', "
+        "'rb').read())); print(len(x.findall('COMMAND_LOGS/LOG_ENTRY')))\"`. Also open a .pka from this "
+        "round as a student, type a command, and check the same menus in the activity window.",
+        "Record where the log shows (menu path, screenshot) or that it doesn't; whether it lists the ISP "
+        "commands from 27 Oct; and the count before and after your commands. Delete command-log-pt.pkt "
+        "after: it's a scratch file.",
+    ),
+]
+
+ROUNDS = {1: (CHECKS, OUT), 3: (CHECKS_3, ROOT / "out" / "pt-checks-3")}
+
+
 def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
+    checks, out = ROUNDS[int(sys.argv[1]) if len(sys.argv) > 1 else 1]
+    out.mkdir(parents=True, exist_ok=True)
+    rel = out.relative_to(ROOT).as_posix()
     lines = [
         "# Packet Tracer checks",
         "",
@@ -459,15 +659,17 @@ def main() -> None:
         "Note anything unexpected even if it isn't asked about. Screenshots welcome.",
         "",
     ]
-    for i, c in enumerate(CHECKS, 1):
+    for i, c in enumerate(checks, 1):
         stem = f"{i:02d}-{c.name}"
         where = "no file"
         if c.build is not None:
             try:
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", pktlib.PktWarning)
-                    c.build().save(OUT / f"{stem}.pkt")
-                where = f"`out/pt-checks/{stem}.pkt`"
+                    built = c.build()
+                    name = f"{stem}.pka" if isinstance(built, Activity) else f"{stem}.pkt"
+                    built.save(out / name)
+                where = f"`{rel}/{name}`"
             except pktlib.PktError as e:
                 where = f"not built: pktlib refuses it ({e}); skip, or try it by hand in the GUI"
         lines += [
@@ -479,8 +681,8 @@ def main() -> None:
             "- **Result:**",
             "",
         ]
-    (OUT / "CHECKS.md").write_text("\n".join(lines), encoding="utf-8")
-    print(f"wrote {sum(c.build is not None for c in CHECKS)} files and CHECKS.md to {OUT}")
+    (out / "CHECKS.md").write_text("\n".join(lines), encoding="utf-8")
+    print(f"wrote {sum(c.build is not None for c in checks)} files and CHECKS.md to {out}")
 
 
 if __name__ == "__main__":
