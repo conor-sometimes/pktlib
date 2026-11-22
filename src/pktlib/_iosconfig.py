@@ -176,6 +176,7 @@ _SINGLE = (
     "enable password ",
     "vtp mode ",
     "vtp domain ",
+    "vtp password ",
     "banner motd ",
     "banner login ",
     "security passwords min-length ",

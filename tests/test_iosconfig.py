@@ -288,6 +288,19 @@ def test_single_value_settings_replace_in_place():
     assert out[0] == "hostname CORE"
 
 
+def test_vtp_password_replaces_in_place(tmp_path):
+    """Issue #8: a second `vtp password` replaced the first nowhere, so both were kept.
+    Whether Packet Tracer 8.2 saves the line at all is in pt-results/CHECKS-3.md."""
+    net = pktlib.new()
+    sw = net.switch("SW1")
+    sw.config(["vtp domain LAB", "vtp password one"])
+    sw.config(["vtp domain LAB2", "vtp password two"])
+    assert [l for l in sw.running_config if l.startswith("vtp")] == ["vtp domain LAB2", "vtp password two"]
+    net.save(tmp_path / "vtp.pkt")
+    back = pktlib.load(tmp_path / "vtp.pkt").device("SW1").running_config
+    assert [l for l in back if l.startswith("vtp")] == ["vtp domain LAB2", "vtp password two"]
+
+
 def test_dhcp_pools_and_acls_merge():
     lines = ["ip dhcp pool LAN", " network 10.0.0.0 255.0.0.0", "!", "end"]
     out = merge_config(
