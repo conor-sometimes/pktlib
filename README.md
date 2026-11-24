@@ -52,8 +52,8 @@ The latest unreleased version: `pip install git+https://github.com/conor-sometim
 
 - **Build** routers, switches, PCs, phones and any of the 64 models in the 8.2 palette;
   cable them, address them, configure them with IOS text, fit modules, draw labels.
-- **Read** any `.pkt`: devices, ports, cables, addresses, VLANs, config. Files from older
-  Packet Tracers (6.2 and up) load and save as 8.2.
+- **Read** any `.pkt`: devices, ports, cables, addresses, VLANs, config, the command log.
+  Files from older Packet Tracers (6.2 and up) load and save as 8.2.
 - **Activities** (`.pka`, `pktlib.activity`): read one, score a network against it, or write
   a new one from two networks that Packet Tracer grades with Check Results.
 - **Check** a file before handing it in: `pktlib audit lab.pkt` finds duplicate addresses,
@@ -72,6 +72,7 @@ lists what and how we know.
 |---|---|
 | `pktlib info lab.pkt` | devices, links and addresses (a `.pka`: its items and tests; `--answers` adds the values) |
 | `pktlib audit lab.pkt` | problems you can see without running the simulation; exit code 1 if any (a `.pka`: its answer network) |
+| `pktlib log lab.pkt` | the commands typed in the file, with times (Options > View Command Log) |
 | `pktlib dump lab.pkt [out.py]` | a Python script that rebuilds the file |
 | `pktlib decode lab.pkt [out.xml]` / `encode in.xml out.pkt` | the raw XML |
 
@@ -96,7 +97,8 @@ lists what and how we know.
   network and graded items: `pktlib info --answers` lists them, and the activity password
   only locks Packet Tracer's Activity Wizard. Don't use pktlib to read the answers to an
   activity you're being graded on. And if you set activities, don't count on a `.pka` to
-  keep its answers secret.
+  keep its answers secret, or on a file's command log as proof of who typed what: it's plain
+  data in the file, and pktlib can read and write it.
 - **No course material here.** This repo holds no lecturer or NetAcad files. Every sample
   file says where it came from in
   [tests/fixtures/README.md](https://github.com/conor-sometimes/pktlib/blob/main/tests/fixtures/README.md).

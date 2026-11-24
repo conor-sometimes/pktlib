@@ -87,6 +87,25 @@ def _network_info(net: Network) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _log(path: str) -> str:
+    """The command log, one command a line: time, device, prompt and command, then what
+    IOS made of it when that differs."""
+    found = _open(path, strict=False)
+    net = found.answer if isinstance(found, Activity) else found
+    entries = net.command_log
+    if not entries:
+        return f"{path}: the command log is empty\n"
+    width = max(len(e.device) for e in entries)
+    lines = []
+    for e in entries:
+        when = "?" * 19 if e.time is None else f"{e.time:%Y-%m-%d %H:%M:%S}"
+        line = f"{when}  {e.device:<{width}}  {e.prompt}{e.command}"
+        if e.resolved and e.resolved != e.command:
+            line += f"  ({e.resolved})"
+        lines.append(line)
+    return "\n".join(lines) + f"\n{len(entries)} command(s)\n"
+
+
 def _audit_files(paths: list[str]) -> int:
     """Audit each file; exit 1 if any has a problem or can't be read."""
     bad = 0
@@ -127,6 +146,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("src")
     p.add_argument("--answers", action="store_true", help="a .pka: show each item's value and the answer network")
     sub.add_parser("audit").add_argument("src", nargs="+")
+    sub.add_parser("log", help="list the commands typed in the file (Options > View Command Log)").add_argument("src")
     args = ap.parse_args(argv)
 
     try:
@@ -140,6 +160,8 @@ def main(argv: list[str] | None = None) -> int:
             _out(None, _info(args.src, answers=args.answers))
         elif args.cmd == "audit":
             return _audit_files(args.src)
+        elif args.cmd == "log":
+            _out(None, _log(args.src))
         elif args.cmd == "dump":
             out = Path(args.dst).with_suffix(".pkt").name if args.dst else "out.pkt"
             _out(args.dst, to_python(load(args.src), out))

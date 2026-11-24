@@ -20,12 +20,14 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 from collections.abc import Callable, Iterable, Iterator, Mapping
+from datetime import datetime
 from importlib import resources
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Literal, NamedTuple, get_args
 
 from . import _editions as editions
+from ._cmdlog import LogEntry, make_entry, read_entry
 from ._codec import decode_with_level, encode
 from ._errors import FileFormatError, NotFound, PktError, PktWarning
 from ._iosconfig import blocks, interface_state, interfaces, merge_config, refused, short_passwords
@@ -1160,6 +1162,24 @@ class Device:
                 return line.split(None, 1)[1]
         return _text(self.engine, "SYS_NAME")
 
+    @property
+    def command_log(self) -> list[LogEntry]:
+        """This device's entries in the network's command log, oldest first."""
+        return [e for e in self.network.command_log if e.device == self.name]
+
+    def log_command(
+        self, command: str, *, at: datetime, prompt: str | None = None, resolved: str | None = None
+    ) -> LogEntry:
+        """Add `command` to the command log as typed here at `at`: see Network.log_command.
+        `prompt` defaults to the enable prompt (`R1#`), `resolved` to the command."""
+        return self.network.log_command(
+            self.name,
+            command,
+            at=at,
+            prompt=f"{self.hostname}#" if prompt is None else prompt,
+            resolved=command if resolved is None else resolved,
+        )
+
     # end devices
     def _end_port(self, port: str | None) -> Port:
         if self.kind in GUI_ONLY_KINDS:
@@ -1952,6 +1972,34 @@ class Network:
             el = self.root.find(tag)
             out += [] if el is None else [Shape(s) for s in el]
         return out
+
+    @property
+    def command_log(self) -> list[LogEntry]:
+        """Options > View Command Log: every command typed at a CLI in this file, as
+        Packet Tracer saved it, oldest first. Entries pktlib can't read are skipped."""
+        el = self.root.find("COMMAND_LOGS")
+        entries = [] if el is None else [read_entry(e) for e in el.findall("LOG_ENTRY")]
+        return [e for e in entries if e is not None]
+
+    def log_command(self, device: str, command: str, *, at: datetime, prompt: str, resolved: str = "") -> LogEntry:
+        """Add an entry at the end of the command log. The time is the caller's: pktlib
+        writes it as Packet Tracer does and doesn't check it follows the last entry.
+        `device` is the device's name; Packet Tracer shows it in the Device column."""
+        if device not in self:
+            raise NotFound(f"no device called {device!r}")
+        entry = LogEntry(at, device, prompt, command, resolved)
+        el = self.root.find("COMMAND_LOGS")
+        if el is None:
+            el = ET.SubElement(self.root, "COMMAND_LOGS")
+        el.append(make_entry(entry))
+        return entry
+
+    def clear_command_log(self) -> None:
+        """Empty the command log, as a file pktlib makes starts."""
+        el = self.root.find("COMMAND_LOGS")
+        if el is not None:
+            for child in list(el):
+                el.remove(child)
 
     @property
     def notes(self) -> list[Note]:

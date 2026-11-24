@@ -133,6 +133,11 @@ br.add_module("WIC-2T")  # first free slot that takes it: Serial0/0/0, 0/0/1
 - `net.ping(src, dst, ip=None, scenario=None)` adds a Simple PDU students click in Packet
   Tracer; `net.pdus` lists them as `Pdu(scenario, source, destination, ip)`.
 - `net.profile = Profile("A Student", "a@example.com")` (Options > User Profile).
+- `net.command_log` (Options > View Command Log): every command typed at a CLI, as
+  `LogEntry(time, device, prompt, command, resolved)`; `d.command_log` is one device's.
+  `d.log_command("show run", at=datetime(...), prompt=None, resolved=None)` adds one (prompt
+  defaults to `R1#`, resolved to the command), `net.clear_command_log()` empties it. A new
+  network's log is empty; times are written as Packet Tracer writes them, in the order added.
 
 ## Checking a network
 

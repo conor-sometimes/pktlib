@@ -22,6 +22,7 @@ import contextlib as _contextlib
 from importlib import metadata as _metadata
 
 from ._audit import Problem, audit
+from ._cmdlog import LogEntry
 from ._codec import decode, encode
 from ._editions import EDITIONS, LATEST
 from ._errors import FileFormatError, NotFound, PktError, PktWarning, TagMismatch
@@ -62,6 +63,7 @@ __all__ = [
     "Interface",
     "Lab",
     "Link",
+    "LogEntry",
     "Network",
     "NotFound",
     "Note",
