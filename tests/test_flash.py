@@ -142,3 +142,31 @@ def test_to_python_brings_folders_across(tmp_path):
     assert "mkdir('ipsdir')" in source
     exec(compile(source, "export", "exec"), {})
     assert pktlib.load(tmp_path / "out.pkt").device("R1").flash_folders == ["ipsdir"]
+
+
+def test_packet_tracer_keeps_mkdir_folders_on_all_three_models():
+    """Round 3 (24 Nov 2026): `ipsdir` made by mkdir() on a 2901, a 2960 and a 3650 listed in
+    `dir flash:` as `drw-`, size 0 on each (not 192 as on 6 Nov), and Packet Tracer saved it
+    back in the shape mkdir() writes. tests/fixtures/folders-pt.pkt is that save."""
+    saved = pktlib.load(Path(__file__).parent / "fixtures" / "folders-pt.pkt")
+    assert [(d.name, d.model) for d in saved.devices] == [("D1", "2901"), ("D2", "2960-24TT"), ("D3", "3650-24PS")]
+    made = pktlib.new(seed=1).router("R1", "2901")
+    made.mkdir("ipsdir")
+    want = flash_of(made).find("FILES/FILE[NAME='ipsdir']")
+    for d in saved.devices:
+        got = flash_of(d).find("FILES/FILE[NAME='ipsdir']")
+        assert got.attrib == want.attrib == {"class": "CDirectory"}, d.name
+        assert [c.tag for c in got] == [c.tag for c in want], d.name
+        assert got.findtext("PERMISSION") == "6" and list(got.find("FILES")) == [], d.name
+
+
+def test_packet_tracer_has_no_folder_inside_a_folder():
+    """Round 3 (24 Nov 2026), on the 2901: `mkdir flash:ipsdir/inner` answered `Created dir
+    flash:ipsdir/inner`, but `dir flash:` then listed a top-level `ipsdirinner`; `dir
+    flash:ipsdir` and `cd ipsdir` gave errors. So mkdir() refuses a slash."""
+    d1 = pktlib.load(Path(__file__).parent / "fixtures" / "folders-pt.pkt").device("D1")
+    folders = [f.findtext("NAME") for f in flash_of(d1).findall("FILES/FILE") if f.get("class") == "CDirectory"]
+    assert folders == ["ipsdir", "ipsdirinner"]
+    assert all(list(f.find("FILES")) == [] for f in flash_of(d1).findall("FILES/FILE[@class='CDirectory']"))
+    with pytest.raises(PktError):
+        pktlib.new(seed=1).router("R1", "2901").mkdir("ipsdir/inner")

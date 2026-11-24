@@ -1,5 +1,7 @@
 """Reading IOS config the way Packet Tracer replays it."""
 
+from pathlib import Path
+
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
@@ -290,7 +292,7 @@ def test_single_value_settings_replace_in_place():
 
 def test_vtp_password_replaces_in_place(tmp_path):
     """Issue #8: a second `vtp password` replaced the first nowhere, so both were kept.
-    Whether Packet Tracer 8.2 saves the line at all is in pt-results/CHECKS-3.md."""
+    Packet Tracer 8.2 reads the lines but saves VTP elsewhere: see the next test."""
     net = pktlib.new()
     sw = net.switch("SW1")
     sw.config(["vtp domain LAB", "vtp password one"])
@@ -453,3 +455,18 @@ def test_lines_not_seen_dropped_arent_reported():
     assert refused([MIN_10, "line con 0", " password cisco", "line aux 0", " password cisco"]) == []
     assert refused([MIN_10, "line vty 0 4", " password 7 0822455D0A16"]) == []
     assert refused([MIN_10, "enable password cisco", "username a password cisco"]) == []
+
+
+def test_packet_tracer_saves_vtp_outside_the_configs():
+    """Round 3 (24 Nov 2026): a pktlib 2960 with `vtp domain LAB` and `vtp password two` opened
+    with `show vtp password` = two, and `show running-config | include vtp` printed nothing.
+    After `vtp password three` and `copy running-config startup-config`, Packet Tracer saved
+    no `vtp` line in either config: the settings went to <VTP> under the device's engine and
+    again in flash:vlan.dat, as real IOS keeps them. tests/fixtures/vtp-pt.pkt is that save."""
+    sw = pktlib.load(Path(__file__).parent / "fixtures" / "vtp-pt.pkt").device("SW1")
+    assert not [l for l in sw.running_config if l.startswith("vtp")]
+    startup = [l.text or "" for l in sw.engine.find("STARTUPCONFIG").iter("LINE")]
+    assert startup and not [l for l in startup if l.startswith("vtp")]
+    vlan_dat = next(f for f in sw.engine.iter("FILE") if f.findtext("NAME") == "vlan.dat")
+    for vtp in (sw.engine.find("VTP"), vlan_dat.find("FILE_CONTENT/VTP")):
+        assert (vtp.findtext("DOMAIN_NAME"), vtp.findtext("PASSWORD")) == ("LAB", "three")
