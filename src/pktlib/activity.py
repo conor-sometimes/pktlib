@@ -372,7 +372,9 @@ def diff_items(answer: Network, start: Network) -> list[tuple[str, ...]]:
     are licence serials and the like. An interface line is left out only when
     the Ports item that grades it is in the list: a sub-interface has no Ports
     items, and `Port Mode` reads 1 for both access and unset, so those stay
-    lines."""
+    lines. `no shutdown` is never an item: IOS doesn't print it, so Check
+    Results can't match it and leaves it out (seen 24 Nov 2026, round 3). A
+    port left shut shows only in a connectivity test."""
     items = []
     for path in _candidates([answer, start]):
         want, got = _value(answer, path), _value(start, path)
@@ -387,6 +389,8 @@ def diff_items(answer: Network, start: Network) -> list[tuple[str, ...]]:
             if not line.startswith(" "):
                 header = line
             if _NOISE.match(line.strip()) or _graded_elsewhere(header, line):
+                continue
+            if line.startswith(" ") and " ".join(line.split()) == "no shutdown":
                 continue
             if _port_item(d.name, header, line, items):
                 continue
