@@ -11,16 +11,7 @@ Round 3 (#8 to #11, PR #6) was done on 24 Nov: `pt-results/CHECKS-3.md`, tests d
 2026. What it found was fixed on branch round3-fixes (short passwords, #8, #9, #11, the
 command log).
 
-### Round 4 (round3-fixes, 24 Nov)
-
-Written by pktlib, not yet opened in Packet Tracer:
-
-1. **Spaced names.** `net.switch("Switch 7")`, `net.router("Core (A)#1", "2911")`, `net.pc("PC 7")`,
-   saved. Expect the labels as given, `hostname Switch-7` and `Core-A-1` at the CLI, and the
-   file to open without complaint.
-2. **Command log written by pktlib.** Two `log_command()` entries on R1 (one with a day under
-   10, to see the unpadded `Tue Nov 3` form is read), saved. Options > View Command Log should
-   list them with those times; then type a command and check it lands after them.
+Round 4 (spaced names, a command log pktlib wrote) passed the same day: `pt-results/CHECKS-4.md`.
 
 ### Older
 
