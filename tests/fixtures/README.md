@@ -26,5 +26,8 @@ file missing from this list.
 - `rich2-answer.pkt`, `rich2-start.pkt`: built by `scripts/sources/rich2.py`, saved by Packet Tracer 8.2 (round 2, 3a).
 - `rich2.pka`: made from those two in Packet Tracer 8.2's Activity Wizard (round 2, 3b).
 - `locked-a.pka`, `locked-b.pka`: `sample-answer.pkt` as an activity with throwaway passwords alpha1 and bravo2 (round 2, 4).
+- `vtp-pt.pkt`: a pktlib 2960 given `vtp password three` in Packet Tracer 8.2 and saved; VTP lives in `<VTP>`, not the configs (round 3, 1).
+- `spaced-name.pkt`: a 2960 and a PC-PT named `Switch 7` and `PC 7` in Packet Tracer 8.2, hostname `Sw.1/#` (round 3, 5).
+- `folders-pt.pkt`: pktlib's `mkdir()` folders on a 2901, 2960 and 3650, plus `ipsdirinner` typed on the 2901, saved by Packet Tracer 8.2 (round 3, 6).
 
-The rounds are written up in `pt-results/CHECKS.md` (round 1) and `CHECKS-2.md` (round 2).
+The rounds are written up in `pt-results/CHECKS.md` (round 1), `CHECKS-2.md` (round 2) and `CHECKS-3.md` (round 3).

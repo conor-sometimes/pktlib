@@ -614,3 +614,30 @@ def test_config_warns_once_not_on_every_later_call():
 def test_a_password_at_min_length_gives_no_warning():
     r = pktlib.new(seed=615).router("R1", "2901")
     r.config("security passwords min-length 10\nline vty 0 4\n password cisco12345")
+
+
+def test_packet_tracer_display_names_take_spaces():
+    """Round 3 (24 Nov 2026), issue #11: Config > Display Name took `Switch 7`, `PC 7`,
+    `A.B(C)#D/E&F` and a 70-character name unchanged. Only the CLI refused the space:
+    `hostname Switch 7` gave `% Invalid input detected`, `hostname Sw.1/#` was taken, and the
+    display name didn't follow the hostname. tests/fixtures/spaced-name.pkt is that save.
+    pktlib reads such a file; making one still refuses the space (see TODO.md)."""
+    net = pktlib.load(Path(__file__).parent / "fixtures" / "spaced-name.pkt")
+    assert [(d.name, d.model) for d in net.devices] == [("Switch 7", "2960-24TT"), ("PC 7", "PC-PT")]
+    assert net.device("Switch 7").hostname == "Sw.1/#"
+    assert pktlib.audit(net) == []
+
+
+def test_packet_tracer_logs_every_command_typed():
+    """Round 3 (24 Nov 2026): Options > View Command Log (Ctrl+Shift+V) lists every command
+    typed in the file, with time, device, prompt, command and resolved command, so whoever
+    opens a file sees its history; it works in an activity opened as a student too. Each
+    LOG_ENTRY is those five fields, NUL-separated, in hex. A network pktlib makes has none."""
+    import xml.etree.ElementTree as ET
+
+    xml = decode((Path(__file__).parent / "fixtures" / "rich2-answer.pkt").read_bytes())
+    entries = [bytes.fromhex(e.text or "").decode().split("\0") for e in ET.fromstring(xml).iter("LOG_ENTRY")]
+    assert len(entries) == 11
+    assert entries[0] == ["Tue Oct 27 15:50:36 2026", "ISP", "ISP>", "enable", "enable"]
+    assert entries[2][2:] == ["ISP(config)#", "interface fa0/3", "interface FastEthernet0/3"]
+    assert [list(logs) for logs in pktlib.new(seed=1).root.iter("COMMAND_LOGS")] == [[]]

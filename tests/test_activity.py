@@ -268,7 +268,10 @@ def _on_a_stick(*subs: tuple[int, str]) -> pktlib.Network:
 
 
 def test_diff_items_grades_sub_interfaces():
-    """Issue #9: sub-interfaces have no Ports items, so their lines are items."""
+    """Issue #9: sub-interfaces have no Ports items, so their lines are items. Checked in Packet
+    Tracer 8.2 on 24 Nov 2026 (round 3): as a student typed each line under its own IOS order,
+    the item turned Correct, though its name carries the answer's line number; 100% at the end.
+    The `no shutdown` item never showed in Check Results (IOS doesn't print it): see TODO.md."""
     answer = _on_a_stick((10, "10.0.10.1 255.255.255.0"), (20, "10.0.20.1 255.255.255.0"))
     start = _on_a_stick()
     got = diff_items(answer, start)
@@ -295,7 +298,9 @@ def _access(mode: str | None) -> pktlib.Network:
 
 
 def test_diff_items_grades_an_access_port_the_start_leaves_unset():
-    """Issue #10: `Port Mode` reads 1 for access and for unset, so the line is the item."""
+    """Issue #10: `Port Mode` reads 1 for access and for unset, so the line is the item. Checked in
+    Packet Tracer 8.2 on 24 Nov 2026 (round 3): Incorrect at the start, Incorrect with `switchport
+    mode trunk`, Correct with `switchport mode access`."""
     got = diff_items(_access("access"), _access(None))
     assert got == [("SW1", "Running Configuration", "interface FastEthernet0/5", "switchport mode access")]
     act = activity_from_xml(make_activity(_access("access"), _access(None), got).to_xml())
