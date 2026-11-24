@@ -20,14 +20,14 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 from collections.abc import Callable, Iterable, Iterator, Mapping
-from datetime import datetime
+from datetime import datetime, timedelta
 from importlib import resources
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Literal, NamedTuple, get_args
 
 from . import _editions as editions
-from ._cmdlog import LogEntry, make_entry, read_entry
+from ._cmdlog import LogEntry, make_entry, prompted, read_entry
 from ._codec import decode_with_level, encode
 from ._errors import FileFormatError, NotFound, PktError, PktWarning
 from ._iosconfig import blocks, interface_state, interfaces, merge_config, refused, short_passwords
@@ -1219,6 +1219,52 @@ class Device:
             prompt=f"{self.hostname}#" if prompt is None else prompt,
             resolved=command if resolved is None else resolved,
         )
+
+    def log_commands(
+        self,
+        commands: str | Iterable[str],
+        *,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        gap: float | tuple[float, float] = (30, 60),
+        mode: str = "user",
+    ) -> list[LogEntry]:
+        """Log `commands` as typed here one after another: the first at `start`, or the
+        last at `end` (`end=datetime.now()` keeps every time in the past). Give one. Each
+        prompt follows the mode the commands before it left IOS in (`R1>`, `R1#`,
+        `R1(config)#`, `R1(config-if)#`, ...), starting from `mode`. `gap` is the seconds
+        between commands: a number, or (low, high) for a whole number of seconds drawn from
+        the network's seeded random numbers, so the same seed gives the same log. Times are
+        whole seconds, as Packet Tracer keeps them. `resolved` is the command as typed.
+
+            r1.log_commands(["enable", "configure terminal", *lines, "end"], end=datetime.now())"""
+        lines = commands.splitlines() if isinstance(commands, str) else list(commands)
+        if isinstance(gap, tuple):
+            low, high = gap
+            if not 0 <= low <= high:
+                raise PktError(f"a gap is 0 <= low <= high seconds, got {gap!r}")
+        elif gap < 0:
+            raise PktError(f"a gap is 0 seconds or more, got {gap!r}")
+        steps = prompted(self.hostname, lines, mode)
+        gaps = [
+            timedelta(seconds=self.network._rng.randint(round(gap[0]), round(gap[1])))
+            if isinstance(gap, tuple)
+            else timedelta(seconds=round(gap))
+            for _ in steps[1:]
+        ]
+        if start is not None and end is None:
+            at = start
+        elif end is not None and start is None:
+            at = end - sum(gaps, timedelta())
+        else:
+            raise PktError("give log_commands() a start or an end time, not both")
+        at = at.replace(microsecond=0)
+        out = []
+        for i, (prompt, command) in enumerate(steps):
+            if i:
+                at += gaps[i - 1]
+            out.append(self.log_command(command, at=at, prompt=prompt))
+        return out
 
     # end devices
     def _end_port(self, port: str | None) -> Port:
