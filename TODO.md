@@ -8,7 +8,10 @@ just examples                  # rebuild and audit the examples into out/
 ## To check in Packet Tracer
 
 Round 3 (#8 to #11, PR #6) was done on 24 Nov: `pt-results/CHECKS-3.md`, tests dated 24 Nov
-2026. #9 and #10 passed and can close. What it found that needs code is under Bugs below.
+2026. What it found was fixed on branch round3-fixes (short passwords, #8, #9, #11, the
+command log).
+
+Round 4 (spaced names, a command log pktlib wrote) passed the same day: `pt-results/CHECKS-4.md`.
 
 ### Older
 
@@ -48,25 +51,6 @@ still pinged), a 1000-bit RSA key (SSH works). Coordinates clamp to about x 100-
   opened in Packet Tracer and its routes still come up.
 
 ## Bugs and rough edges
-
-From round 3 (24 Nov, `pt-results/CHECKS-3.md`):
-
-- #11: Packet Tracer's display name takes spaces, punctuation and 70 characters; only `hostname`
-  refuses a space. Let names have spaces, keeping any hostname pktlib derives from one free of
-  them; then close #11 (tests/fixtures/spaced-name.pkt).
-- #8: Packet Tracer saves VTP in the engine's <VTP> and in flash:vlan.dat, never as config lines
-  (tests/fixtures/vtp-pt.pkt). Reading a PT-saved file, pktlib sees no VTP. Read <VTP> (or write
-  it too), then close #8.
-- #9: diff_items makes an item for the parent's `no shutdown`. IOS never prints it and Check
-  Results left it out (6 of 7 items listed). Drop it.
-- `short_passwords()` is wrong both ways. On a 2901 under min-length 10 a reload dropped the con
-  and aux `password cisco` and the VTY `password 7 0822455D0A16` (cisco); none is reported. A
-  2960 has no `security passwords min-length` (`security ?` is unrecognised; the line is gone on
-  load), so nothing drops there, yet its VTY is reported. Count con, aux and `password 7`
-  (decrypted length); add the min-length line to `refused()` for a 2960 and skip it there.
-- `mkdir()` docstring and tests/test_flash.py's header say size 192; round 3 saw 0 on a 2901, a
-  2960 and a 3650 (and for a typed folder).
-- Item 5 of round 3 said `pktlib show`; there is no such command (`pktlib info` lists devices).
 
 - `add_module` writes `clock rate` on every new serial port, the DTE end too (harmless, untidy).
 - Interface blocks for added modules land after `line vty`; Packet Tracer's own saves keep IOS

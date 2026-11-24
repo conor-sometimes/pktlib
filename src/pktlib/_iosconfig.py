@@ -6,6 +6,7 @@ import contextlib
 import re
 
 from ._errors import PktError
+from ._passwords import decode7
 from ._ports import canonical_port, expand_range, port_sort_key
 
 
@@ -90,16 +91,48 @@ _REFUSED: list[tuple[frozenset[str] | None, re.Pattern[str] | None, re.Pattern[s
         re.compile(r"^\s+(no switchport\s*$|ip address )", re.I),
         "is dropped by Packet Tracer 8.2: a 2960's ports are switch ports only (address it on `interface Vlan1`)",
     ),
+    # round 3, 2026-11-24: `security ?` is unrecognised on a 2960, and the line was gone on load
+    (
+        frozenset({"2960-24TT"}),
+        None,
+        re.compile(r"^security passwords\b", re.I),
+        "is dropped by Packet Tracer 8.2: a 2960 has no `security passwords` command, so no minimum applies",
+    ),
 ]
 
 
-def short_passwords(lines: list[str]) -> list[tuple[str, str]]:
-    """`line vty` passwords Packet Tracer 8.2 drops on a reload for being under
-    `security passwords min-length`: [(line, reason)]. Seen 6 Nov 2026 on a 2901
-    under min-length 10: `password cisco` was gone after a reload and `cisco12345`,
-    exactly 10, stayed. The file had min-length after the line blocks, where
-    config() writes it, so where it sits doesn't save the password. Console and
-    aux lines, and the `password 7` form, weren't tried, so they aren't reported."""
+# Models whose IOS in Packet Tracer 8.2 has no `security passwords min-length`: on a 2960
+# `security ?` is `% Unrecognized command` and the line is gone on load (24 Nov 2026).
+_NO_MIN_LENGTH = frozenset({"2960-24TT"})
+
+
+def _password_text(words: list[str]) -> str | None:
+    """The password a `password ...` line holds, as IOS checks its length: `password cisco`
+    and `password 0 cisco` give 'cisco', `password 7 0822455D0A16` gives it decoded. None
+    for a form that can't be read back (another type, or a type 7 that isn't one)."""
+    if len(words) > 2 and words[1].isdigit():
+        if words[1] == "0":
+            return " ".join(words[2:])
+        if words[1] == "7" and len(words) == 3:
+            try:
+                return decode7(words[2])
+            except ValueError:
+                return None
+        return None
+    return " ".join(words[1:])
+
+
+def short_passwords(lines: list[str], model: str | None = None) -> list[tuple[str, str]]:
+    """Console, aux and VTY passwords Packet Tracer 8.2 drops on a reload for being
+    under `security passwords min-length`: [(line, reason)]. Seen on a 2901 under
+    min-length 10: on 6 Nov `password cisco` on the VTY lines was gone after a reload
+    and `cisco12345`, exactly 10, stayed; on 24 Nov the con and aux `password cisco`
+    and the VTY `password 7 0822455D0A16` (cisco) went too. Startup config kept them
+    all: they go when it loads. Where min-length sits doesn't save a password. A
+    model in _NO_MIN_LENGTH never enforces one, so nothing is reported there.
+    `enable password` and `username` weren't tried, so they aren't reported."""
+    if model in _NO_MIN_LENGTH:
+        return []
     parsed = blocks(lines)
     minimum = 0
     for header, _ in parsed:
@@ -109,15 +142,16 @@ def short_passwords(lines: list[str]) -> list[tuple[str, str]]:
             minimum = 0
     out: list[tuple[str, str]] = []
     for header, body in parsed:
-        if not header.lower().startswith("line vty"):
+        if not re.match(r"line (vty|con|aux)\b", header.lower()):
             continue
         # a later password replaces an earlier one
         words = next(
             (w for w in map(str.split, reversed(body)) if w[:1] == ["password"] or w[:2] == ["no", "password"]), []
         )
-        if len(words) < 2 or words[0] == "no" or (len(words) > 2 and words[1].isdigit()):
+        if len(words) < 2 or words[0] == "no":
             continue
-        if len(" ".join(words[1:])) < minimum:
+        text = _password_text(words)
+        if text is not None and len(text) < minimum:
             why = (
                 f"under `{header}` is dropped by Packet Tracer 8.2 on a reload: "
                 f"it's shorter than `security passwords min-length {minimum}`"
@@ -141,7 +175,7 @@ def refused(lines: list[str], model: str | None = None) -> list[tuple[str, str]]
                 continue
             if rx.search(line):
                 out.append((line, why))
-    return out + short_passwords(lines)
+    return out + short_passwords(lines, model)
 
 
 _MERGEABLE = (

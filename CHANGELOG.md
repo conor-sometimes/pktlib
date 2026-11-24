@@ -7,14 +7,26 @@
 - `d.mkdir("ipsdir")` makes a folder in `flash:`, and `d.flash_folders` lists them.
   `ip ips config location flash:ipsdir` needs the folder, and no config line makes it.
   `to_python()` carries folders across.
-- A VTY password shorter than `security passwords min-length` gives a `PktWarning` from
-  `config()` and shows in `refused()` and `audit()`: Packet Tracer drops it on a reload.
+- A console, aux or VTY password shorter than `security passwords min-length` gives a
+  `PktWarning` from `config()` and shows in `refused()` and `audit()`: Packet Tracer drops it
+  on a reload. `password 7` is measured decoded. On a 2960, which has no `security passwords`
+  command, the min-length line itself is reported instead.
+- The command log (Options > View Command Log): `net.command_log` and `d.command_log` read it
+  as `LogEntry` (time, device, prompt, command, resolved); `d.log_command(...)` and
+  `net.log_command(...)` add an entry at a time you give; `net.clear_command_log()` empties it.
+  `pktlib log lab.pkt` prints it.
+- `d.vtp` reads a switch's VTP as `Vtp(domain, password, mode, version)`: from the `vtp`
+  lines pktlib writes, or from `<VTP>` in a file Packet Tracer saved, which keeps VTP out of
+  the running config (#8). `vtp` lines are no longer activity items for the same reason.
 
 ### Fixed
 
-- `diff_items()` (so `Lab.build(pka=True)`) grades router sub-interfaces and a port brought
-  up with `no shutdown` (#9), and `switchport mode access` on a port the start leaves unset
+- Device names can have spaces and `. ( ) # / &`, as Packet Tracer's Display Name does
+  (#11): `net.switch("Switch 7")`. The hostname a new device gets swaps what IOS might refuse
+  for `-` (`hostname Switch-7`), since `hostname Switch 7` is refused.
+- `diff_items()` (so `Lab.build(pka=True)`) grades router sub-interfaces (#9), and `switchport mode access` on a port the start leaves unset
   (#10). Interface lines are left out only when a Ports item that differs already grades them.
+  `no shutdown` is never an item: IOS doesn't print it, so Check Results can't grade it.
 - A second `vtp password` replaces the first instead of adding another line (#8).
 
 ## 0.2.2 (29 Oct 2026)

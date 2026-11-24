@@ -20,12 +20,14 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 from collections.abc import Callable, Iterable, Iterator, Mapping
+from datetime import datetime
 from importlib import resources
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Literal, NamedTuple, get_args
 
 from . import _editions as editions
+from ._cmdlog import LogEntry, make_entry, read_entry
 from ._codec import decode_with_level, encode
 from ._errors import FileFormatError, NotFound, PktError, PktWarning
 from ._iosconfig import blocks, interface_state, interfaces, merge_config, refused, short_passwords
@@ -202,16 +204,30 @@ def _vlan_list(spec: str) -> list[int]:
     return out
 
 
-_NAME_RE = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,63}")
+# Packet Tracer 8.2's Display Name took `Switch 7`, `A.B(C)#D/E&F` and 70 characters
+# (24 Nov 2026, issue #11). pktlib allows that set, single spaces between words, and no
+# `>`, which joins activity item paths ("R1 > Ports > ...").
+_NAME_RE = re.compile(r"[A-Za-z](?:[A-Za-z0-9_.()#/&-]| (?! |$)){0,63}")
+_NOT_HOSTNAME = re.compile(r"[^A-Za-z0-9_.-]+")
 
 
 def _check_name(name: object) -> str:
-    """A device name pktlib will write: letter first, then letters, digits, _ or -."""
+    """A device name pktlib will write: a letter, then letters, digits, single spaces and
+    `_ - . ( ) # / &`, 64 characters at most."""
     if not isinstance(name, str):
         raise TypeError(f"a device name is a string, got {type(name).__name__}")
     if not _NAME_RE.fullmatch(name):
-        raise PktError(f"bad device name {name!r}: letter first, then up to 63 letters, digits, _ or -")
+        raise PktError(
+            f"bad device name {name!r}: a letter, then up to 63 letters, digits, single spaces, or _ - . ( ) # / &"
+        )
     return name
+
+
+def _hostname_for(name: str) -> str:
+    """The IOS hostname a new device gets from its name. `hostname Switch 7` is refused
+    (`% Invalid input`, 24 Nov 2026), so each run of anything but letters, digits, `_`,
+    `.` and `-` becomes `-`: 'Switch 7' -> 'Switch-7'."""
+    return _NOT_HOSTNAME.sub("-", name).strip("-")
 
 
 def _check_str(value: object, what: str) -> str:
@@ -848,8 +864,8 @@ class Device:
             commands, add, remove = self._plan_vlans(commands)
         merged = merge_config(self.running_config, commands)
         # a password and the min-length it falls under can come in separate calls
-        before = short_passwords(self.running_config)
-        found = refused(commands, self.model) + [p for p in short_passwords(merged) if p not in before]
+        before = short_passwords(self.running_config, self.model)
+        found = refused(commands, self.model) + [p for p in short_passwords(merged, self.model) if p not in before]
         for line, why in dict.fromkeys(found):
             warnings.warn(f"{self.name}: `{line.strip()}` {why}", PktWarning, stacklevel=3)
         # everything is checked; now change the device
@@ -1106,7 +1122,7 @@ class Device:
         it; `ip ips config location flash:ipsdir` needs it there. Already
         there, nothing changes.
 
-        Packet Tracer 8.2 lists it in `dir flash:` as `drw-`, size 192, and
+        Packet Tracer 8.2 lists it in `dir flash:` as `drw-` (size 0; 192 once), and
         takes it as the IPS location, the same as a typed mkdir (2901, 6 Nov
         2026). `dir ipsdir` and `cd ipsdir` give errors on either. The shape,
         the numbering (one FILE_COUNTER per file system) and the name order are
@@ -1159,6 +1175,50 @@ class Device:
             if line.startswith("hostname "):
                 return line.split(None, 1)[1]
         return _text(self.engine, "SYS_NAME")
+
+    @property
+    def vtp(self) -> Vtp | None:
+        """VTP as Packet Tracer will run it; None for a device without VTP (a PC).
+        Packet Tracer saves VTP in the device's <VTP> (and flash:vlan.dat), not as config
+        lines, and applies `vtp ...` lines it finds in a file on load (24 Nov 2026). So
+        the lines pktlib writes win, and a file Packet Tracer saved is read from <VTP>."""
+        el = self.engine.find("VTP")
+        if el is None:
+            return None
+        domain, password = el.findtext("DOMAIN_NAME") or "", el.findtext("PASSWORD") or ""
+        mode = {"0": "server"}.get(el.findtext("MODE") or "", "")
+        version = int(el.findtext("VERSION") or "1")
+        for line in self.running_config:
+            words = line.split(None, 2)
+            if len(words) < 3 or words[0] != "vtp":
+                continue
+            if words[1] == "domain":
+                domain = words[2]
+            elif words[1] == "password":
+                password = words[2]
+            elif words[1] == "mode":
+                mode = words[2].strip().lower()
+            elif words[1] == "version" and words[2].strip().isdigit():
+                version = int(words[2])
+        return Vtp(domain, password, mode, version)
+
+    @property
+    def command_log(self) -> list[LogEntry]:
+        """This device's entries in the network's command log, oldest first."""
+        return [e for e in self.network.command_log if e.device == self.name]
+
+    def log_command(
+        self, command: str, *, at: datetime, prompt: str | None = None, resolved: str | None = None
+    ) -> LogEntry:
+        """Add `command` to the command log as typed here at `at`: see Network.log_command.
+        `prompt` defaults to the enable prompt (`R1#`), `resolved` to the command."""
+        return self.network.log_command(
+            self.name,
+            command,
+            at=at,
+            prompt=f"{self.hostname}#" if prompt is None else prompt,
+            resolved=command if resolved is None else resolved,
+        )
 
     # end devices
     def _end_port(self, port: str | None) -> Port:
@@ -1343,6 +1403,17 @@ class RsaKey(NamedTuple):
 
     name: str
     bits: int
+
+
+class Vtp(NamedTuple):
+    """A device's VTP settings: `show vtp status` and `show vtp password`. `mode` is
+    'server', 'client', 'transparent' or 'off', or '' when the file says only a number
+    pktlib hasn't seen Packet Tracer use (0 is server)."""
+
+    domain: str
+    password: str
+    mode: str
+    version: int
 
 
 class Pdu(NamedTuple):
@@ -1831,14 +1902,15 @@ class Network:
         self._devices_el.append(dev_el)
         dev = Device(self, dev_el)
         dev.xy = at
+        hostname = _hostname_for(name)
         if eng.find("SYS_NAME") is not None and dev.has_ios:
-            _set(eng, "SYS_NAME", name)
+            _set(eng, "SYS_NAME", hostname)
         if dev.has_ios:
             if key == "router-1841-wic2t":  # taken from a configured router: start it from factory defaults
-                dev.running_config = _default_router_config(name, list(dev.ports))
+                dev.running_config = _default_router_config(hostname, list(dev.ports))
             else:  # catalogue templates are fresh off the palette
                 dev.running_config = [
-                    f"hostname {name}" if line.startswith("hostname ") else line for line in dev.running_config
+                    f"hostname {hostname}" if line.startswith("hostname ") else line for line in dev.running_config
                 ]
             # each router gets its own licence serial, as two real ones would
             # (cloned 2911s all said `sn FTX1524ATOJ-`; found by the stress tests)
@@ -1952,6 +2024,34 @@ class Network:
             el = self.root.find(tag)
             out += [] if el is None else [Shape(s) for s in el]
         return out
+
+    @property
+    def command_log(self) -> list[LogEntry]:
+        """Options > View Command Log: every command typed at a CLI in this file, as
+        Packet Tracer saved it, oldest first. Entries pktlib can't read are skipped."""
+        el = self.root.find("COMMAND_LOGS")
+        entries = [] if el is None else [read_entry(e) for e in el.findall("LOG_ENTRY")]
+        return [e for e in entries if e is not None]
+
+    def log_command(self, device: str, command: str, *, at: datetime, prompt: str, resolved: str = "") -> LogEntry:
+        """Add an entry at the end of the command log. The time is the caller's: pktlib
+        writes it as Packet Tracer does and doesn't check it follows the last entry.
+        `device` is the device's name; Packet Tracer shows it in the Device column."""
+        if device not in self:
+            raise NotFound(f"no device called {device!r}")
+        entry = LogEntry(at, device, prompt, command, resolved)
+        el = self.root.find("COMMAND_LOGS")
+        if el is None:
+            el = ET.SubElement(self.root, "COMMAND_LOGS")
+        el.append(make_entry(entry))
+        return entry
+
+    def clear_command_log(self) -> None:
+        """Empty the command log, as a file pktlib makes starts."""
+        el = self.root.find("COMMAND_LOGS")
+        if el is not None:
+            for child in list(el):
+                el.remove(child)
 
     @property
     def notes(self) -> list[Note]:

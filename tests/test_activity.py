@@ -271,7 +271,7 @@ def test_diff_items_grades_sub_interfaces():
     """Issue #9: sub-interfaces have no Ports items, so their lines are items. Checked in Packet
     Tracer 8.2 on 24 Nov 2026 (round 3): as a student typed each line under its own IOS order,
     the item turned Correct, though its name carries the answer's line number; 100% at the end.
-    The `no shutdown` item never showed in Check Results (IOS doesn't print it): see TODO.md."""
+    `no shutdown` never showed in Check Results (IOS doesn't print it), so it isn't an item."""
     answer = _on_a_stick((10, "10.0.10.1 255.255.255.0"), (20, "10.0.20.1 255.255.255.0"))
     start = _on_a_stick()
     got = diff_items(answer, start)
@@ -279,7 +279,8 @@ def test_diff_items_grades_sub_interfaces():
         head = f"interface GigabitEthernet0/1.{tag}"
         assert ("R1", "Running Configuration", head, f"encapsulation dot1Q {tag}") in got
         assert ("R1", "Running Configuration", head, f"ip address 10.0.{tag}.1 255.255.255.0") in got
-    assert ("R1", "Running Configuration", "interface GigabitEthernet0/1", "no shutdown") in got
+    # IOS never prints `no shutdown`, and Check Results left that item out (round 3)
+    assert not [i for i in got if i[-1] == "no shutdown"]
     act = activity_from_xml(make_activity(answer, start, got).to_xml())
     assert all(ok for _, ok in act.score(answer)) and not any(ok for _, ok in act.score(start))
     # a changed address between two configured networks is an item too
@@ -446,11 +447,9 @@ def test_diff_items_grades_acls_nat_and_dhcp_once():
     items = [" > ".join(p) for p in diff_items(answer, start)]
     assert {p for p, _ in RICH2} - set(items) == {"R1 > NAT > Inside Source List > NAT Source Setting 1"}
     lines = [p for p in items if "Running Configuration" in p]
-    # what the wizard can't grade stays a config line: ports brought up, static routes,
-    # and PAT with its overload
+    # what the wizard can't grade stays a config line: static routes, and PAT with its
+    # overload. Ports brought up aren't items: Check Results drops `no shutdown` (round 3)
     assert lines == [
-        "R1 > Running Configuration > interface GigabitEthernet0/0 > no shutdown",
-        "R1 > Running Configuration > interface GigabitEthernet0/1 > no shutdown",
         "R1 > Running Configuration > ip route 0.0.0.0 0.0.0.0 198.51.100.1",
         "R1 > Running Configuration > ip route 10.20.0.0 255.255.0.0 198.51.100.1",
         "R1 > Running Configuration > ip nat inside source list 1 interface GigabitEthernet0/1 overload",
