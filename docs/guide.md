@@ -140,6 +140,8 @@ br.add_module("WIC-2T")  # first free slot that takes it: Serial0/0/0, 0/0/1
   `d.log_command("show run", at=datetime(...), prompt=None, resolved=None)` adds one (prompt
   defaults to `R1#`, resolved to the command), `net.clear_command_log()` empties it. A new
   network's log is empty; times are written as Packet Tracer writes them, in the order added.
+  `d.log_commands(["enable", "conf t", *lines, "end"], end=datetime.now(), gap=(30, 60))`
+  logs a run with prompts that follow the CLI mode and a seeded gap between commands.
 
 ## Checking a network
 

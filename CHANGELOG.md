@@ -4,6 +4,10 @@
 
 ### Added
 
+- `d.log_commands(commands, end=datetime.now())` logs a run of commands as typed at that
+  device: each prompt follows the mode IOS is in (`R1>`, `R1#`, `R1(config)#`,
+  `R1(config-if)#`, ...), and the gap between commands is 30 to 60 whole seconds from the
+  network's seeded random numbers (or a fixed `gap=`). `start=` counts forward instead.
 - `d.mkdir("ipsdir")` makes a folder in `flash:`, and `d.flash_folders` lists them.
   `ip ips config location flash:ipsdir` needs the folder, and no config line makes it.
   `to_python()` carries folders across.

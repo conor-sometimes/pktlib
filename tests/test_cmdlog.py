@@ -4,14 +4,17 @@ it, in a .pkt and in a .pka opened as a student; each LOG_ENTRY is those five fi
 NUL-separated, in hex."""
 
 from datetime import datetime
+from itertools import pairwise
 from pathlib import Path
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 import pktlib
 from pktlib import LogEntry, NotFound, PktError
 from pktlib._cli import main
-from pktlib._cmdlog import format_time, parse_time
+from pktlib._cmdlog import format_time, parse_time, prompted
 from pktlib._xml import req
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -85,3 +88,94 @@ def test_cli_log(capsys):
     assert out[-1] == "11 command(s)"
     assert main(["log", str(FIXTURES / "routed.pkt")]) == 0
     assert "the command log is empty" in capsys.readouterr().out
+
+
+def test_prompts_follow_the_mode_ios_is_in():
+    got = prompted(
+        "R1",
+        ["en", "configure terminal", "int g0/1", " no shut", "interface g0/1.10", "exit", "line con 0", "end"],
+    )
+    assert [p for p, _ in got] == [
+        "R1>",
+        "R1#",
+        "R1(config)#",
+        "R1(config-if)#",
+        "R1(config-if)#",
+        "R1(config-subif)#",
+        "R1(config)#",
+        "R1(config-line)#",
+    ]
+    assert [c for _, c in got][3] == "no shut"  # indentation dropped, as a paste's is
+    more = prompted(
+        "SW1", ["conf t", "vlan 10", "name X", "ip access-list extended A", "exit", "exit", "disable"], "exec"
+    )
+    assert [p for p, _ in more] == [
+        "SW1#",
+        "SW1(config)#",
+        "SW1(config-vlan)#",
+        "SW1(config-vlan)#",
+        "SW1(config-ext-nacl)#",
+        "SW1(config)#",
+        "SW1#",
+    ]
+    assert prompted("R1", ["", "!", "en"]) == [("R1>", "en")]
+    with pytest.raises(PktError, match="unknown CLI mode"):
+        prompted("R1", ["en"], "privileged")
+
+
+def test_log_commands_paces_and_prompts(tmp_path):
+    def build() -> list[LogEntry]:
+        r1 = pktlib.new(seed=21).router("R1", "2911")
+        return r1.log_commands(["enable", "conf t", "hostname R1", "end"], start=datetime(2026, 11, 24, 9, 0, 0, 5))
+
+    log = build()
+    assert [e.prompt for e in log] == ["R1>", "R1#", "R1(config)#", "R1(config)#"]
+    assert log[0].time == datetime(2026, 11, 24, 9, 0, 0)  # whole seconds, as Packet Tracer keeps them
+    gaps = [(b.time - a.time).total_seconds() for a, b in pairwise(log) if a.time and b.time]
+    assert all(30 <= g <= 60 and g == int(g) for g in gaps)
+    assert [e.time for e in build()] == [e.time for e in log]  # same seed, same log
+
+    net = pktlib.new(seed=22)
+    sw = net.switch("SW1")
+    fixed = sw.log_commands("enable\nshow vlan brief", start=datetime(2026, 1, 1), gap=1)
+    assert [e.time for e in fixed] == [datetime(2026, 1, 1, 0, 0, 0), datetime(2026, 1, 1, 0, 0, 1)]
+    net.save(tmp_path / "log.pkt")
+    assert pktlib.load(tmp_path / "log.pkt").command_log == fixed
+    for bad in ((60, 30), (-1, 5)):
+        with pytest.raises(PktError, match="gap"):
+            sw.log_commands(["en"], start=datetime(2026, 1, 1), gap=bad)
+    with pytest.raises(PktError, match="gap"):
+        sw.log_commands(["en"], start=datetime(2026, 1, 1), gap=-1)
+
+
+def test_log_commands_can_end_now():
+    r1 = pktlib.new(seed=24).router("R1", "2911")
+    now = datetime(2026, 11, 24, 15, 0, 0)
+    log = r1.log_commands(["enable", "conf t", "end"], end=now)
+    assert log[-1].time == now and log[0].time is not None and log[0].time < now
+    with pytest.raises(PktError, match="start or an end"):
+        r1.log_commands(["en"])
+    with pytest.raises(PktError, match="start or an end"):
+        r1.log_commands(["en"], start=now, end=now)
+
+
+@given(st.datetimes(min_value=datetime(1970, 1, 1), max_value=datetime(9999, 12, 31)))
+def test_any_time_reads_back_as_written(t):
+    t = t.replace(microsecond=0)
+    assert parse_time(format_time(t)) == t
+
+
+_TEXT = st.text(
+    alphabet=st.characters(blacklist_categories=("Cs", "Cc"), blacklist_characters="\0"), min_size=1, max_size=30
+).filter(lambda s: s.strip() != "")
+
+
+@settings(max_examples=50, deadline=None)
+@given(st.lists(st.tuples(st.datetimes(min_value=datetime(2000, 1, 1)), _TEXT, _TEXT), min_size=1, max_size=5))
+def test_any_log_survives_a_save(tmp_path_factory, entries):
+    net = pktlib.new(seed=23)
+    r1 = net.router("R1", "2911")
+    want = [r1.log_command(cmd, at=t.replace(microsecond=0), prompt=p) for t, p, cmd in entries]
+    path = tmp_path_factory.mktemp("log") / "log.pkt"
+    net.save(path)
+    assert pktlib.load(path).command_log == want

@@ -75,3 +75,82 @@ def make_entry(entry: LogEntry) -> ET.Element:
     el = ET.Element("LOG_ENTRY")
     el.text = "\0".join(fields).encode("utf-8").hex()
     return el
+
+
+# The prompt IOS shows in each mode, after the hostname. Seen in Packet Tracer 8.2's log:
+# `ISP>`, `ISP#`, `ISP(config)#`; the sub-mode names are IOS's own.
+_PROMPTS = {
+    "user": ">",
+    "exec": "#",
+    "config": "(config)#",
+    "config-if": "(config-if)#",
+    "config-subif": "(config-subif)#",
+    "config-line": "(config-line)#",
+    "config-router": "(config-router)#",
+    "config-vlan": "(config-vlan)#",
+    "dhcp-config": "(dhcp-config)#",
+    "config-std-nacl": "(config-std-nacl)#",
+    "config-ext-nacl": "(config-ext-nacl)#",
+}
+MODES = tuple(_PROMPTS)
+
+
+def _is(word: str, keyword: str, shortest: int) -> bool:
+    """Whether `word` is `keyword` as IOS takes it abbreviated ('conf' for configure)."""
+    return len(word) >= shortest and keyword.startswith(word.lower())
+
+
+def _next_mode(mode: str, command: str) -> str:
+    """The mode IOS is in after `command`, typed in `mode`. A command that enters a mode
+    pktlib doesn't know leaves the mode as it was."""
+    words = command.split()
+    if not words:
+        return mode
+    w = words[0]
+    if mode == "user":
+        return "exec" if _is(w, "enable", 2) else mode
+    if mode == "exec":
+        if _is(w, "configure", 4) and (len(words) == 1 or _is(words[1], "terminal", 1)):
+            return "config"
+        return "user" if _is(w, "disable", 4) else mode
+    if _is(w, "end", 3):
+        return "exec"
+    if _is(w, "exit", 3):
+        return "exec" if mode == "config" else "config"
+    if mode != "config":
+        # a sub-mode takes config-mode commands too, and may enter another sub-mode
+        entered = _next_mode("config", command)
+        return entered if entered != "config" else mode
+    if _is(w, "interface", 3) and len(words) > 1:
+        return "config-subif" if "." in "".join(words[1:]) else "config-if"
+    if _is(w, "line", 4):
+        return "config-line"
+    if _is(w, "router", 3):
+        return "config-router"
+    if _is(w, "vlan", 4) and len(words) > 1 and words[1][:1].isdigit():
+        return "config-vlan"
+    if w == "ip" and len(words) > 2:
+        if _is(words[1], "dhcp", 4) and _is(words[2], "pool", 4):
+            return "dhcp-config"
+        if _is(words[1], "access-list", 6) and _is(words[2], "standard", 3):
+            return "config-std-nacl"
+        if _is(words[1], "access-list", 6) and _is(words[2], "extended", 3):
+            return "config-ext-nacl"
+    return mode
+
+
+def prompted(hostname: str, commands: list[str], mode: str = "user") -> list[tuple[str, str]]:
+    """Each command with the prompt it's typed at, starting in `mode` (one of MODES):
+    `prompted("R1", ["enable", "conf t", "int g0/1", "end"])` gives `R1>`, `R1#`,
+    `R1(config)#`, `R1(config-if)#`. Blank lines and `!` are skipped; indentation is
+    dropped, as a pasted config's is."""
+    if mode not in _PROMPTS:
+        raise PktError(f"unknown CLI mode {mode!r}: one of {', '.join(MODES)}")
+    out = []
+    for raw in commands:
+        command = raw.strip()
+        if not command or command == "!":
+            continue
+        out.append((hostname + _PROMPTS[mode], command))
+        mode = _next_mode(mode, command)
+    return out
