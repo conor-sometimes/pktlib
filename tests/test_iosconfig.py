@@ -16,6 +16,7 @@ from pktlib._iosconfig import (
     refused,
     setting_key,
 )
+from pktlib._xml import req
 
 
 def test_blocks_merge_a_header_seen_twice():
@@ -465,8 +466,8 @@ def test_packet_tracer_saves_vtp_outside_the_configs():
     again in flash:vlan.dat, as real IOS keeps them. tests/fixtures/vtp-pt.pkt is that save."""
     sw = pktlib.load(Path(__file__).parent / "fixtures" / "vtp-pt.pkt").device("SW1")
     assert not [l for l in sw.running_config if l.startswith("vtp")]
-    startup = [l.text or "" for l in sw.engine.find("STARTUPCONFIG").iter("LINE")]
+    startup = [l.text or "" for l in req(sw.engine, "STARTUPCONFIG").iter("LINE")]
     assert startup and not [l for l in startup if l.startswith("vtp")]
     vlan_dat = next(f for f in sw.engine.iter("FILE") if f.findtext("NAME") == "vlan.dat")
-    for vtp in (sw.engine.find("VTP"), vlan_dat.find("FILE_CONTENT/VTP")):
+    for vtp in (req(sw.engine, "VTP"), req(vlan_dat, "FILE_CONTENT/VTP")):
         assert (vtp.findtext("DOMAIN_NAME"), vtp.findtext("PASSWORD")) == ("LAB", "three")

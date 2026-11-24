@@ -636,7 +636,7 @@ def test_packet_tracer_logs_every_command_typed():
     import xml.etree.ElementTree as ET
 
     xml = decode((Path(__file__).parent / "fixtures" / "rich2-answer.pkt").read_bytes())
-    entries = [bytes.fromhex(e.text).decode().split("\0") for e in ET.fromstring(xml).iter("LOG_ENTRY")]
+    entries = [bytes.fromhex(e.text or "").decode().split("\0") for e in ET.fromstring(xml).iter("LOG_ENTRY")]
     assert len(entries) == 11
     assert entries[0] == ["Tue Oct 27 15:50:36 2026", "ISP", "ISP>", "enable", "enable"]
     assert entries[2][2:] == ["ISP(config)#", "interface fa0/3", "interface FastEthernet0/3"]
