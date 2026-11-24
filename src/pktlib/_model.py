@@ -848,8 +848,8 @@ class Device:
             commands, add, remove = self._plan_vlans(commands)
         merged = merge_config(self.running_config, commands)
         # a password and the min-length it falls under can come in separate calls
-        before = short_passwords(self.running_config)
-        found = refused(commands, self.model) + [p for p in short_passwords(merged) if p not in before]
+        before = short_passwords(self.running_config, self.model)
+        found = refused(commands, self.model) + [p for p in short_passwords(merged, self.model) if p not in before]
         for line, why in dict.fromkeys(found):
             warnings.warn(f"{self.name}: `{line.strip()}` {why}", PktWarning, stacklevel=3)
         # everything is checked; now change the device
