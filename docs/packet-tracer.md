@@ -84,9 +84,15 @@ Found the hard way while testing the examples:
   `generate_rsa_key` writes one there, and SSH logins to it work.
 - **A flash folder isn't config either.** `mkdir` is typed, never saved in
   `show run`; the folder is a `CDirectory` entry in the device's file manager.
-  `mkdir()` writes one. `dir flash:` lists it as `drw-`, size 192, and `ip ips
-  config location` takes it; `dir ipsdir` and `cd ipsdir` give errors on any
-  folder, a typed `mkdir`'s too.
+  `mkdir()` writes one. `dir flash:` lists it as `drw-` (size 0 on a 2901, 2960
+  and 3650 on 24 Nov; 192 on a 2901 on 6 Nov), and `ip ips config location`
+  takes it; `dir ipsdir` and `cd ipsdir` give errors on any folder, a typed
+  `mkdir`'s too. There are no folders in folders: `mkdir flash:ipsdir/inner`
+  makes a top-level `ipsdirinner`.
+- **VTP isn't in the running config.** Packet Tracer applies `vtp` lines it
+  finds in a file, but saves VTP in the device's `<VTP>` and `flash:vlan.dat`
+  and keeps it out of both configs, so `show running-config | include vtp`
+  prints nothing. `d.vtp` reads either; `vtp` lines aren't activity items.
 - **Names before the interfaces that use them.** IOS refuses a
   `zone-member security` line for a zone that doesn't exist yet, and saves
   zones, IPS rules and crypto maps above the interfaces. pktlib puts new
@@ -111,11 +117,20 @@ Found the hard way while testing the examples:
   with `include-connected`. On a 2960, `no switchport` and `ip address` on a
   port are both dropped (its address goes on `interface Vlan1`). `refused()`,
   the audit and a `PktWarning` from `config()` flag known cases.
-- **A short VTY password goes on a reload.** Under `security passwords
-  min-length 10`, a VTY `password cisco` is gone after a reload, and
-  `cisco12345` stays. The file looks fine until then, and it happens with
-  min-length written below the line blocks too. `refused()`, the audit and a
-  `PktWarning` from `config()` flag it, whichever call added which.
+- **A short line password goes on a reload.** Under `security passwords
+  min-length 10`, on a 2901, the con, aux and VTY `password cisco` and a VTY
+  `password 7 0822455D0A16` (cisco) are gone after a reload, and `cisco12345`
+  stays. Startup config keeps them; they go as it loads, with min-length
+  written below the line blocks too. A 2960 has no `security passwords`
+  command, so the line is dropped on load and no minimum applies. `refused()`,
+  the audit and a `PktWarning` from `config()` flag each, whichever call added
+  which.
+- **The command log is in the file.** Options > View Command Log lists every
+  command typed at a CLI, with time, device and prompt, in a `.pka` opened as a
+  student too. It's plain data: `net.command_log` reads it.
+- **A display name takes spaces; a hostname doesn't.** Config > Display Name
+  took `Switch 7`, `A.B(C)#D/E&F` and 70 characters, and doesn't follow
+  `hostname`; `hostname Switch 7` is `% Invalid input`.
 - **Some things vanish on load.** A second VLAN with a name already in use is
   dropped whole (so is every VLAN after the first in a range given one
   `name`), a cable between two ports of one device is gone, and a 7960

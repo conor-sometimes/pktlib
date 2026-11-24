@@ -1,6 +1,6 @@
 """Folders in flash:. `mkdir` is an exec command, so no config line makes one. Seen in Packet
 Tracer 8.2 on 6 Nov 2026, on a 2901: a CDirectory entry written into the file lists in `dir flash:`
-as `drw-`, size 192, satisfies `ip ips config location flash:ipsdir` (`show ip ips all` has the
+as `drw-` (size 192 that day, 0 on 24 Nov), satisfies `ip ips config location flash:ipsdir` (`show ip ips all` has the
 location), and behaves as a typed `mkdir` does. The shape and numbering here come from the folders
 Packet Tracer itself saved in an 829's c: (scripts/sources/catalogue_network.pkt)."""
 

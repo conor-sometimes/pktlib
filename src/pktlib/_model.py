@@ -1122,7 +1122,7 @@ class Device:
         it; `ip ips config location flash:ipsdir` needs it there. Already
         there, nothing changes.
 
-        Packet Tracer 8.2 lists it in `dir flash:` as `drw-`, size 192, and
+        Packet Tracer 8.2 lists it in `dir flash:` as `drw-` (size 0; 192 once), and
         takes it as the IPS location, the same as a typed mkdir (2901, 6 Nov
         2026). `dir ipsdir` and `cd ipsdir` give errors on either. The shape,
         the numbering (one FILE_COUNTER per file system) and the name order are
