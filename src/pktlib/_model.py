@@ -868,6 +868,8 @@ class Device:
         found = refused(commands, self.model) + [p for p in short_passwords(merged, self.model) if p not in before]
         for line, why in dict.fromkeys(found):
             warnings.warn(f"{self.name}: `{line.strip()}` {why}", PktWarning, stacklevel=3)
+        # refuses an unseen vtp mode before anything changes, then writes <VTP>
+        self._sync_vtp(merged)
         # everything is checked; now change the device
         for v in remove:
             if v in self.vlans:
@@ -876,6 +878,43 @@ class Device:
             self.add_vlan(v, name)
         self.running_config = merged
         return self
+
+    def _sync_vtp(self, lines: list[str]) -> None:
+        """Copy `vtp mode/domain/password/version` lines into <VTP> and flash:vlan.dat's copy.
+        Packet Tracer 8.2 ignores a `vtp mode` line in a file and runs the mode <VTP> holds
+        (24 Nov 2026: a 2960 written `vtp mode client` came up a Server); domain and password
+        lines it does apply. So pktlib writes all of them where Packet Tracer keeps them."""
+        el = self.engine.find("VTP")
+        if el is None:
+            return
+        values: dict[str, str] = {}
+        for line in lines:
+            words = line.split(None, 2)
+            if len(words) < 3 or words[0] != "vtp":
+                continue
+            key, value = words[1].lower(), words[2].strip()
+            if key == "mode":
+                if value.lower() not in _VTP_MODES:
+                    raise PktError(
+                        f"{self.name}: `vtp mode {value}` hasn't been seen saved by Packet Tracer "
+                        f"(known: {', '.join(_VTP_MODES)})"
+                    )
+                values["MODE"] = str(_VTP_MODES[value.lower()])
+            elif key == "domain":
+                values["DOMAIN_NAME"] = value
+            elif key == "password":
+                values["PASSWORD"] = value
+            elif key == "version" and value.isdigit():
+                values["VERSION"] = value
+        if not values:
+            return
+        copies = [el]
+        vlan_dat = next((f for f in self.engine.iter("FILE") if f.findtext("NAME") == "vlan.dat"), None)
+        if vlan_dat is not None and vlan_dat.find("FILE_CONTENT/VTP") is not None:
+            copies.append(req(vlan_dat, "FILE_CONTENT/VTP"))
+        for vtp in copies:
+            for tag, value in values.items():
+                _set(vtp, tag, value)
 
     def _check_interfaces(self, commands: list[str]) -> None:
         """Refuse `interface X` (or a sub-interface X.N) for a physical port this device doesn't have."""
@@ -1186,9 +1225,11 @@ class Device:
         if el is None:
             return None
         domain, password = el.findtext("DOMAIN_NAME") or "", el.findtext("PASSWORD") or ""
-        mode = {"0": "server"}.get(el.findtext("MODE") or "", "")
+        modes = {str(n): name for name, n in _VTP_MODES.items()}
+        mode = modes.get(el.findtext("MODE") or "", "")
         version = int(el.findtext("VERSION") or "1")
         for line in self.running_config:
+            # domain and password lines in a file are applied on load; a mode line is not
             words = line.split(None, 2)
             if len(words) < 3 or words[0] != "vtp":
                 continue
@@ -1196,8 +1237,6 @@ class Device:
                 domain = words[2]
             elif words[1] == "password":
                 password = words[2]
-            elif words[1] == "mode":
-                mode = words[2].strip().lower()
             elif words[1] == "version" and words[2].strip().isdigit():
                 version = int(words[2])
         return Vtp(domain, password, mode, version)
@@ -1451,10 +1490,14 @@ class RsaKey(NamedTuple):
     bits: int
 
 
+# <VTP><MODE> as Packet Tracer 8.2 saves it (24 Nov 2026, a 2960 set from the CLI each way)
+_VTP_MODES = {"server": 0, "client": 1, "transparent": 2}
+
+
 class Vtp(NamedTuple):
     """A device's VTP settings: `show vtp status` and `show vtp password`. `mode` is
-    'server', 'client', 'transparent' or 'off', or '' when the file says only a number
-    pktlib hasn't seen Packet Tracer use (0 is server)."""
+    'server', 'client' or 'transparent', or '' for a number pktlib hasn't seen Packet
+    Tracer save."""
 
     domain: str
     password: str

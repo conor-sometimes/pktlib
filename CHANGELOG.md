@@ -22,6 +22,9 @@
 - `d.vtp` reads a switch's VTP as `Vtp(domain, password, mode, version)`: from the `vtp`
   lines pktlib writes, or from `<VTP>` in a file Packet Tracer saved, which keeps VTP out of
   the running config (#8). `vtp` lines are no longer activity items for the same reason.
+  `config()` also writes `vtp mode`, `domain`, `password` and `version` into `<VTP>`: Packet
+  Tracer ignores a `vtp mode` line in a file (a `vtp mode client` switch came up a Server), and
+  saves the mode as 0 server, 1 client, 2 transparent. `d.vtp` reads the mode from `<VTP>`.
 
 ### Fixed
 
