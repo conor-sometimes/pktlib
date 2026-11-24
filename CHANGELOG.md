@@ -18,6 +18,9 @@
 
 ### Fixed
 
+- Device names can have spaces and `. ( ) # / &`, as Packet Tracer's Display Name does
+  (#11): `net.switch("Switch 7")`. The hostname a new device gets swaps what IOS might refuse
+  for `-` (`hostname Switch-7`), since `hostname Switch 7` is refused.
 - `diff_items()` (so `Lab.build(pka=True)`) grades router sub-interfaces (#9), and `switchport mode access` on a port the start leaves unset
   (#10). Interface lines are left out only when a Ports item that differs already grades them.
   `no shutdown` is never an item: IOS doesn't print it, so Check Results can't grade it.

@@ -204,16 +204,30 @@ def _vlan_list(spec: str) -> list[int]:
     return out
 
 
-_NAME_RE = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,63}")
+# Packet Tracer 8.2's Display Name took `Switch 7`, `A.B(C)#D/E&F` and 70 characters
+# (24 Nov 2026, issue #11). pktlib allows that set, single spaces between words, and no
+# `>`, which joins activity item paths ("R1 > Ports > ...").
+_NAME_RE = re.compile(r"[A-Za-z](?:[A-Za-z0-9_.()#/&-]| (?! |$)){0,63}")
+_NOT_HOSTNAME = re.compile(r"[^A-Za-z0-9_.-]+")
 
 
 def _check_name(name: object) -> str:
-    """A device name pktlib will write: letter first, then letters, digits, _ or -."""
+    """A device name pktlib will write: a letter, then letters, digits, single spaces and
+    `_ - . ( ) # / &`, 64 characters at most."""
     if not isinstance(name, str):
         raise TypeError(f"a device name is a string, got {type(name).__name__}")
     if not _NAME_RE.fullmatch(name):
-        raise PktError(f"bad device name {name!r}: letter first, then up to 63 letters, digits, _ or -")
+        raise PktError(
+            f"bad device name {name!r}: a letter, then up to 63 letters, digits, single spaces, or _ - . ( ) # / &"
+        )
     return name
+
+
+def _hostname_for(name: str) -> str:
+    """The IOS hostname a new device gets from its name. `hostname Switch 7` is refused
+    (`% Invalid input`, 24 Nov 2026), so each run of anything but letters, digits, `_`,
+    `.` and `-` becomes `-`: 'Switch 7' -> 'Switch-7'."""
+    return _NOT_HOSTNAME.sub("-", name).strip("-")
 
 
 def _check_str(value: object, what: str) -> str:
@@ -1851,14 +1865,15 @@ class Network:
         self._devices_el.append(dev_el)
         dev = Device(self, dev_el)
         dev.xy = at
+        hostname = _hostname_for(name)
         if eng.find("SYS_NAME") is not None and dev.has_ios:
-            _set(eng, "SYS_NAME", name)
+            _set(eng, "SYS_NAME", hostname)
         if dev.has_ios:
             if key == "router-1841-wic2t":  # taken from a configured router: start it from factory defaults
-                dev.running_config = _default_router_config(name, list(dev.ports))
+                dev.running_config = _default_router_config(hostname, list(dev.ports))
             else:  # catalogue templates are fresh off the palette
                 dev.running_config = [
-                    f"hostname {name}" if line.startswith("hostname ") else line for line in dev.running_config
+                    f"hostname {hostname}" if line.startswith("hostname ") else line for line in dev.running_config
                 ]
             # each router gets its own licence serial, as two real ones would
             # (cloned 2911s all said `sn FTX1524ATOJ-`; found by the stress tests)

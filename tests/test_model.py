@@ -172,7 +172,7 @@ def test_aliases(net):
     assert net.add_device("C", "pc").model == "PC-PT"
 
 
-@pytest.mark.parametrize("bad", ["", "1x", "has space", "a.b", "x" * 65, "-lead"])
+@pytest.mark.parametrize("bad", ["", "1x", "two  spaces", "end ", "a>b", "x" * 65, "-lead"])
 def test_bad_names(net, bad):
     with pytest.raises(PktError):
         net.add_device(bad, "2911")
@@ -620,12 +620,29 @@ def test_packet_tracer_display_names_take_spaces():
     """Round 3 (24 Nov 2026), issue #11: Config > Display Name took `Switch 7`, `PC 7`,
     `A.B(C)#D/E&F` and a 70-character name unchanged. Only the CLI refused the space:
     `hostname Switch 7` gave `% Invalid input detected`, `hostname Sw.1/#` was taken, and the
-    display name didn't follow the hostname. tests/fixtures/spaced-name.pkt is that save.
-    pktlib reads such a file; making one still refuses the space (see TODO.md)."""
+    display name didn't follow the hostname. tests/fixtures/spaced-name.pkt is that save."""
     net = pktlib.load(Path(__file__).parent / "fixtures" / "spaced-name.pkt")
     assert [(d.name, d.model) for d in net.devices] == [("Switch 7", "2960-24TT"), ("PC 7", "PC-PT")]
     assert net.device("Switch 7").hostname == "Sw.1/#"
     assert pktlib.audit(net) == []
+
+
+def test_a_name_with_spaces_gets_a_hostname_without(tmp_path):
+    """Issue #11: names take what Packet Tracer's Display Name took; the hostname made from
+    one swaps what `hostname` might refuse for `-` (`hostname Switch 7` was refused)."""
+    net = pktlib.new(seed=11)
+    sw = net.switch("Switch 7")
+    r = net.router("Core (A)#1", "2911")
+    pc = net.pc("PC 7")
+    assert (sw.hostname, r.hostname) == ("Switch-7", "Core-A-1")
+    assert "hostname Switch-7" in sw.running_config
+    net.save(tmp_path / "spaced.pkt")
+    back = pktlib.load(tmp_path / "spaced.pkt")
+    assert [d.name for d in back.devices] == ["Switch 7", "Core (A)#1", "PC 7"]
+    assert back["Switch 7"] is not None and pc.name == "PC 7"
+    namespace: dict[str, object] = {}
+    exec(pktlib.to_python(back, str(tmp_path / "again.pkt")), namespace)
+    assert [d.name for d in pktlib.load(tmp_path / "again.pkt").devices] == ["Switch 7", "Core (A)#1", "PC 7"]
 
 
 def test_packet_tracer_logs_every_command_typed():

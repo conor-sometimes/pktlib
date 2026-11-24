@@ -84,7 +84,7 @@ def test_rename_refuses_a_taken_name(net):
     assert [d.name for d in net.devices] == ["R1", "S1"]
 
 
-@pytest.mark.parametrize("bad", ["", "1R", "has space", "x" * 65, "R1!"])
+@pytest.mark.parametrize("bad", ["", "1R", "two  spaces", "trailing ", " leading", "a>b", "x" * 65, "R1!"])
 def test_rename_refuses_a_bad_name(net, bad):
     r = net.router("R1", "2911")
     with pytest.raises(PktError, match="bad device name"):
