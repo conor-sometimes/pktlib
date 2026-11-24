@@ -525,3 +525,37 @@ def test_vtp_lines_are_not_activity_items():
         return net
 
     assert diff_items(lab("two"), lab(None)) == []
+
+
+def test_vtp_mode_goes_where_packet_tracer_reads_it(tmp_path):
+    """24 Nov 2026: a 2960 written with `vtp mode client` came up a Server in Packet Tracer 8.2
+    (it runs <VTP><MODE>, not the line) and learned no VLANs. Set from the CLI and saved, <MODE>
+    was 0 for server, 1 for client, 2 for transparent. So config() writes the mode, domain and
+    password into <VTP>, and d.vtp reads the mode from there."""
+    net = pktlib.new(seed=81)
+    sw = net.switch("SW1")
+    for mode, number in (("client", "1"), ("transparent", "2"), ("server", "0")):
+        sw.config([f"vtp mode {mode}", "vtp domain CM", "vtp password cisco"])
+        vtp = req(sw.engine, "VTP")
+        assert (vtp.findtext("MODE"), vtp.findtext("DOMAIN_NAME"), vtp.findtext("PASSWORD")) == (number, "CM", "cisco")
+        assert sw.vtp == pktlib.Vtp("CM", "cisco", mode, 1)
+    sw.config("vtp mode client")
+    net.save(tmp_path / "client.pkt")
+    assert pktlib.load(tmp_path / "client.pkt").device("SW1").vtp == pktlib.Vtp("CM", "cisco", "client", 1)
+
+
+def test_a_vtp_mode_line_alone_is_not_the_mode():
+    # a file written before this fix: the line says client, <VTP> says 0, Packet Tracer runs server
+    net = pktlib.new(seed=82)
+    sw = net.switch("SW1")
+    sw.running_config = [*sw.running_config[:-1], "vtp mode client", "end"]
+    assert sw.vtp == pktlib.Vtp("", "", "server", 1)
+
+
+def test_an_unseen_vtp_mode_is_refused_and_changes_nothing():
+    net = pktlib.new(seed=83)
+    sw = net.switch("SW1")
+    before = list(sw.running_config)
+    with pytest.raises(pktlib.PktError, match="hasn't been seen"):
+        sw.config(["vtp domain CM", "vtp mode off"])
+    assert sw.running_config == before and sw.vtp == pktlib.Vtp("", "", "server", 1)

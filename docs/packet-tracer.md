@@ -92,7 +92,10 @@ Found the hard way while testing the examples:
 - **VTP isn't in the running config.** Packet Tracer applies `vtp` lines it
   finds in a file, but saves VTP in the device's `<VTP>` and `flash:vlan.dat`
   and keeps it out of both configs, so `show running-config | include vtp`
-  prints nothing. `d.vtp` reads either; `vtp` lines aren't activity items.
+  prints nothing. It applies `vtp domain` and `vtp password` lines from a file
+  but not `vtp mode`: a switch written `vtp mode client` comes up a Server and
+  learns no VLANs. `<MODE>` is 0 server, 1 client, 2 transparent, and pktlib
+  writes it. `d.vtp` reads either; `vtp` lines aren't activity items.
 - **Names before the interfaces that use them.** IOS refuses a
   `zone-member security` line for a zone that doesn't exist yet, and saves
   zones, IPS rules and crypto maps above the interfaces. pktlib puts new
