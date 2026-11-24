@@ -107,6 +107,8 @@ Reading:
 - `d.interface_config(name)`: an interface's other lines, keyed by the command without its
   value.
 - `d.vlans` (number to name, read-only), `d.add_vlan(n, name=None)`, `d.remove_vlan(n)`.
+- `d.vtp`: `Vtp(domain, password, mode, version)`. Set it with `vtp` lines in `config()`;
+  Packet Tracer keeps VTP out of the running config when it saves, and `d.vtp` reads either.
 - `d.licenses`, `d.enable_license("securityk9")`.
 - `d.generate_rsa_key(1024)` (needs `ip domain-name`), `d.rsa_key` (`RsaKey(name, bits)`).
 - `d.mkdir("ipsdir")` makes a folder in `flash:`, as the CLI's `mkdir` does (it's not config, so

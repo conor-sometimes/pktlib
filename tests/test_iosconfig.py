@@ -497,3 +497,31 @@ def test_packet_tracer_saves_vtp_outside_the_configs():
     vlan_dat = next(f for f in sw.engine.iter("FILE") if f.findtext("NAME") == "vlan.dat")
     for vtp in (req(sw.engine, "VTP"), req(vlan_dat, "FILE_CONTENT/VTP")):
         assert (vtp.findtext("DOMAIN_NAME"), vtp.findtext("PASSWORD")) == ("LAB", "three")
+
+
+def test_vtp_reads_lines_pktlib_wrote_and_the_element_packet_tracer_saved():
+    """Issue #8: a file Packet Tracer saved has no `vtp` lines, so VTP is read from <VTP>;
+    in a file pktlib wrote, the lines are what Packet Tracer applies on load (24 Nov 2026:
+    `show vtp password` printed `two` from the lines, the element empty)."""
+    saved = pktlib.load(Path(__file__).parent / "fixtures" / "vtp-pt.pkt").device("SW1")
+    assert saved.vtp == pktlib.Vtp("LAB", "three", "server", 1)
+    net = pktlib.new(seed=8)
+    sw = net.switch("SW1")
+    assert sw.vtp == pktlib.Vtp("", "", "server", 1)
+    sw.config(["vtp domain LAB", "vtp password two", "vtp mode transparent", "vtp version 2"])
+    assert sw.vtp == pktlib.Vtp("LAB", "two", "transparent", 2)
+    assert net.pc("PC1").vtp is None
+
+
+def test_vtp_lines_are_not_activity_items():
+    # Packet Tracer never shows `vtp` lines in the running config, so Check Results couldn't match one
+    from pktlib.activity import diff_items
+
+    def lab(password: str | None) -> pktlib.Network:
+        net = pktlib.new(seed=9)
+        sw = net.switch("SW1")
+        if password:
+            sw.config(["vtp domain LAB", f"vtp password {password}"])
+        return net
+
+    assert diff_items(lab("two"), lab(None)) == []

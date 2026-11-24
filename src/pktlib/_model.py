@@ -1177,6 +1177,32 @@ class Device:
         return _text(self.engine, "SYS_NAME")
 
     @property
+    def vtp(self) -> Vtp | None:
+        """VTP as Packet Tracer will run it; None for a device without VTP (a PC).
+        Packet Tracer saves VTP in the device's <VTP> (and flash:vlan.dat), not as config
+        lines, and applies `vtp ...` lines it finds in a file on load (24 Nov 2026). So
+        the lines pktlib writes win, and a file Packet Tracer saved is read from <VTP>."""
+        el = self.engine.find("VTP")
+        if el is None:
+            return None
+        domain, password = el.findtext("DOMAIN_NAME") or "", el.findtext("PASSWORD") or ""
+        mode = {"0": "server"}.get(el.findtext("MODE") or "", "")
+        version = int(el.findtext("VERSION") or "1")
+        for line in self.running_config:
+            words = line.split(None, 2)
+            if len(words) < 3 or words[0] != "vtp":
+                continue
+            if words[1] == "domain":
+                domain = words[2]
+            elif words[1] == "password":
+                password = words[2]
+            elif words[1] == "mode":
+                mode = words[2].strip().lower()
+            elif words[1] == "version" and words[2].strip().isdigit():
+                version = int(words[2])
+        return Vtp(domain, password, mode, version)
+
+    @property
     def command_log(self) -> list[LogEntry]:
         """This device's entries in the network's command log, oldest first."""
         return [e for e in self.network.command_log if e.device == self.name]
@@ -1377,6 +1403,17 @@ class RsaKey(NamedTuple):
 
     name: str
     bits: int
+
+
+class Vtp(NamedTuple):
+    """A device's VTP settings: `show vtp status` and `show vtp password`. `mode` is
+    'server', 'client', 'transparent' or 'off', or '' when the file says only a number
+    pktlib hasn't seen Packet Tracer use (0 is server)."""
+
+    domain: str
+    password: str
+    mode: str
+    version: int
 
 
 class Pdu(NamedTuple):

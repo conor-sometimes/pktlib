@@ -15,6 +15,9 @@
   as `LogEntry` (time, device, prompt, command, resolved); `d.log_command(...)` and
   `net.log_command(...)` add an entry at a time you give; `net.clear_command_log()` empties it.
   `pktlib log lab.pkt` prints it.
+- `d.vtp` reads a switch's VTP as `Vtp(domain, password, mode, version)`: from the `vtp`
+  lines pktlib writes, or from `<VTP>` in a file Packet Tracer saved, which keeps VTP out of
+  the running config (#8). `vtp` lines are no longer activity items for the same reason.
 
 ### Fixed
 
